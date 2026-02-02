@@ -1,0 +1,271 @@
+# Heuristic vs Claude Haiku - Game Results
+# Date: 2024
+# Model: claude-3-5-haiku-20241022
+
+## Summary: Heuristic 4-0 Claude Haiku
+
+================================================================================
+GAME 1 (Seed 42) - Heuristic wins 25-6
+================================================================================
+
+Initial hands:
+  P0 (Heuristic): 10♣, J♦, K♦, 4♣, 9♦
+  P1 (Claude): K♥, 4♦, A♠, 7♦, Q♣, 8♠
+
+T00 P0 (Heuristic): Play K♦ to reduce win threshold                    [0-0]
+T01 P1 (CLAUDE): Play Q♣ for protection                             [0-0]
+T02 P0 (Heuristic): Play 4♣ as one-off (force discard)                 [0-0]
+T03 P1 (CLAUDE): Decline to counter                                 [0-0]
+T04 P1 (CLAUDE): Discard K♥                                         [0-0]
+T05 P1 (CLAUDE): Discard 8♠                                         [0-0]
+T06 P1 (CLAUDE): Play 4♦ as one-off (force discard)                 [0-0]
+T07 P0 (Heuristic): Decline to counter                                 [0-0]
+T08 P0 (Heuristic): Discard J♦                                         [0-0]
+T09 P0 (Heuristic): Discard 9♦                                         [0-0]
+T10 P0 (Heuristic): Play 10♣ for points                                [0-0]
+T11 P1 (CLAUDE): Play A♠ as one-off (scrap all points)              [10-0]
+T12 P0 (Heuristic): Decline to counter                                 [10-0]
+T13 P0 (Heuristic): Draw                                               [0-0]
+T14 P1 (CLAUDE): Play 7♦ for points                                 [0-0]
+T15 P0 (Heuristic): Play Q♦ for protection                             [0-7]
+T16 P1 (CLAUDE): Draw                                               [0-7]
+T17 P0 (Heuristic): Draw                                               [0-7]
+T18 P1 (CLAUDE): Play 8♥ as Glasses (see opponent's hand)           [0-7]
+T19 P0 (Heuristic): Play 4♥ for points                                 [0-7]
+T20 P1 (CLAUDE): Draw                                               [4-7]
+T21 P0 (Heuristic): Draw                                               [4-7]
+T22 P1 (CLAUDE): Play 6♥ as one-off (scrap all permanents)          [4-7]
+T23 P0 (Heuristic): Decline to counter                                 [4-7]
+T24 P0 (Heuristic): Play 5♠ for points                                 [4-7]
+T25 P1 (CLAUDE): Draw                                               [9-7]
+T26 P0 (Heuristic): Draw                                               [9-7]
+T27 P1 (CLAUDE): Scuttle 4♥ with 5♣                                 [9-7]
+T28 P0 (Heuristic): Play 3♥ for points                                 [5-7]
+T29 P1 (CLAUDE): Draw                                               [8-7]
+T30 P0 (Heuristic): Draw                                               [8-7]
+T31 P1 (CLAUDE): Play J♣ to steal 5♠                                [8-7]
+T32 P0 (Heuristic): Play A♥ as one-off (scrap all points)              [3-12]
+T33 P1 (CLAUDE): Decline to counter                                 [3-12]
+T34 P1 (CLAUDE): Draw                                               [0-0]
+T35 P0 (Heuristic): Draw                                               [0-0]
+T36 P1 (CLAUDE): Draw                                               [0-0]
+T37 P0 (Heuristic): Play A♣ for points                                 [0-0]
+T38 P1 (CLAUDE): Draw                                               [1-0]
+T39 P0 (Heuristic): Draw                                               [1-0]
+T40 P1 (CLAUDE): Play 6♠ for points                                 [1-0]
+T41 P0 (Heuristic): Play 4♠ as one-off (force discard)                 [1-6]
+T42 P1 (CLAUDE): Decline to counter                                 [1-6]
+T43 P1 (CLAUDE): Discard J♥                                         [1-6]
+T44 P1 (CLAUDE): Discard 6♦                                         [1-6]
+T45 P1 (CLAUDE): Draw                                               [1-6]
+T46 P0 (Heuristic): Draw                                               [1-6]
+T47 P1 (CLAUDE): Play Q♠ for protection                             [1-6]
+T48 P0 (Heuristic): Play 10♥ for points                                [1-6]
+T49 P1 (CLAUDE): Draw                                               [11-6]
+T50 P0 (Heuristic): Draw                                               [11-6]
+T51 P1 (CLAUDE): Scuttle A♣ with 10♠                                [11-6]
+T52 P0 (Heuristic): Play 5♥ for points                                 [10-6]
+T53 P1 (CLAUDE): Draw                                               [15-6]
+T54 P0 (Heuristic): Draw                                               [15-6]
+T55 P1 (CLAUDE): Play 8♦ as Glasses (see opponent's hand)           [15-6]
+T56 P0 (Heuristic): Play 10♦ for points                                [15-6]
+
+GAME OVER - Winner: Heuristic (25-6)
+
+================================================================================
+GAME 2 (Seed 100) - Heuristic wins 21-1
+================================================================================
+
+Initial hands:
+  P0 (Heuristic): Q♥, 3♥, 6♦, 2♠, 8♠
+  P1 (Claude): J♦, 2♣, 3♦, J♣, 5♠, Q♦
+
+T00 P0 (Heuristic): Play Q♥ for protection                             [0-0]
+T01 P1 (CLAUDE): Play 2♣ as one-off (destroy Q♥)                    [0-0]
+T02 P0 (Heuristic): Counter with 2♠                                    [0-0]
+T03 P1 (CLAUDE): Decline to counter                                 [0-0]
+T04 P0 (Heuristic): Play 8♠ as Glasses (see opponent's hand)           [0-0]
+T05 P1 (CLAUDE): Play 5♠ for points                                 [0-0]
+T06 P0 (Heuristic): Scuttle 5♠ with 6♦                                 [0-5]
+T07 P1 (CLAUDE): Play 3♦ for points                                 [0-0]
+T08 P0 (Heuristic): Scuttle 3♦ with 3♥                                 [0-3]
+T09 P1 (CLAUDE): Play Q♦ for protection                             [0-0]
+T10 P0 (Heuristic): Draw                                               [0-0]
+T11 P1 (CLAUDE): Draw                                               [0-0]
+T12 P0 (Heuristic): Play 9♠ for points                                 [0-0]
+T13 P1 (CLAUDE): Draw                                               [9-0]
+T14 P0 (Heuristic): Draw                                               [9-0]
+T15 P1 (CLAUDE): Draw                                               [9-0]
+T16 P0 (Heuristic): Play 3♣ for points                                 [9-0]
+T17 P1 (CLAUDE): Play A♣ for points                                 [12-0]
+T18 P0 (Heuristic): Draw                                               [12-1]
+T19 P1 (CLAUDE): Play K♠ to reduce win threshold                    [12-1]
+T20 P0 (Heuristic): Play K♥ to reduce win threshold                    [12-1]
+T21 P1 (CLAUDE): Draw                                               [12-1]
+T22 P0 (Heuristic): Draw                                               [12-1]
+T23 P1 (CLAUDE): Play 3♠ as one-off (revive 6♦)                     [12-1]
+T24 P0 (Heuristic): Decline to counter                                 [12-1]
+T25 P0 (Heuristic): Play 9♣ for points                                 [12-1]
+
+GAME OVER - Winner: Heuristic (21-1)
+
+================================================================================
+GAME 3 (Seed 101) - Heuristic wins 21-13
+================================================================================
+
+Initial hands:
+  P0 (Heuristic): 2♠, 9♣, A♣, 2♥, J♥
+  P1 (Claude): J♠, J♦, 7♦, 10♥, A♠, K♠
+
+T00 P0 (Heuristic): Play 9♣ for points                                 [0-0]
+T01 P1 (CLAUDE): Play J♦ to steal 9♣                                [9-0]
+T02 P0 (Heuristic): Play J♥ to steal 9♣                                [0-9]
+T03 P1 (CLAUDE): Scuttle 9♣ with 10♥                                [9-0]
+T04 P0 (Heuristic): Play 2♥ for points                                 [0-0]
+T05 P1 (CLAUDE): Play J♠ to steal 2♥                                [2-0]
+T06 P0 (Heuristic): Play A♣ as one-off (scrap all points)              [0-2]
+T07 P1 (CLAUDE): Decline to counter                                 [0-2]
+T08 P1 (CLAUDE): Draw                                               [0-0]
+T09 P0 (Heuristic): Play 2♠ for points                                 [0-0]
+T10 P1 (CLAUDE): Scuttle 2♠ with 7♦                                 [2-0]
+T11 P0 (Heuristic): Draw                                               [0-0]
+T12 P1 (CLAUDE): Play A♠ for points                                 [0-0]
+T13 P0 (Heuristic): Scuttle A♠ with 9♠                                 [0-1]
+T14 P1 (CLAUDE): Play K♦ to reduce win threshold                    [0-0]
+T15 P0 (Heuristic): Draw                                               [0-0]
+T16 P1 (CLAUDE): Play K♠ to reduce win threshold                    [0-0]
+T17 P0 (Heuristic): Play 2♣ as one-off (destroy K♦)                    [0-0]
+T18 P1 (CLAUDE): Decline to counter                                 [0-0]
+T19 P1 (CLAUDE): Draw                                               [0-0]
+T20 P0 (Heuristic): Draw                                               [0-0]
+T21 P1 (CLAUDE): Draw                                               [0-0]
+T22 P0 (Heuristic): Play 10♣ for points                                [0-0]
+T23 P1 (CLAUDE): Play 8♠ as Glasses (see opponent's hand)           [10-0]
+T24 P0 (Heuristic): Draw                                               [10-0]
+T25 P1 (CLAUDE): Play 5♥ as one-off (draw two)                      [10-0]
+T26 P0 (Heuristic): Decline to counter                                 [10-0]
+T27 P0 (Heuristic): Play 10♠ for points                                [10-0]
+T28 P1 (CLAUDE): Play 3♣ as one-off (revive J♦)                     [20-0]
+T29 P0 (Heuristic): Decline to counter                                 [20-0]
+T30 P0 (Heuristic): Draw                                               [20-0]
+T31 P1 (CLAUDE): Play A♥ as one-off (scrap all points)              [20-0]
+T32 P0 (Heuristic): Decline to counter                                 [20-0]
+T33 P0 (Heuristic): Play 7♠ for points                                 [0-0]
+T34 P1 (CLAUDE): Play J♦ to steal 7♠                                [7-0]
+T35 P0 (Heuristic): Draw                                               [0-7]
+T36 P1 (CLAUDE): Draw                                               [0-7]
+T37 P0 (Heuristic): Scuttle 7♠ with 8♥                                 [0-7]
+T38 P1 (CLAUDE): Play 8♦ as Glasses (see opponent's hand)           [0-0]
+T39 P0 (Heuristic): Draw                                               [0-0]
+T40 P1 (CLAUDE): Draw                                               [0-0]
+T41 P0 (Heuristic): Play 8♣ as Glasses (see opponent's hand)           [0-0]
+T42 P1 (CLAUDE): Play 6♠ as one-off (scrap all permanents)          [0-0]
+T43 P0 (Heuristic): Decline to counter                                 [0-0]
+T44 P0 (Heuristic): Draw                                               [0-0]
+T45 P1 (CLAUDE): Draw                                               [0-0]
+T46 P0 (Heuristic): Play 3♦ for points                                 [0-0]
+T47 P1 (CLAUDE): Scuttle 3♦ with 7♣                                 [3-0]
+T48 P0 (Heuristic): Draw                                               [0-0]
+T49 P1 (CLAUDE): Draw                                               [0-0]
+T50 P0 (Heuristic): Play Q♣ for protection                             [0-0]
+T51 P1 (CLAUDE): Play 5♦ as one-off (draw two)                      [0-0]
+T52 P0 (Heuristic): Decline to counter                                 [0-0]
+T53 P0 (Heuristic): Draw                                               [0-0]
+T54 P1 (CLAUDE): Draw                                               [0-0]
+T55 P0 (Heuristic): Play 6♣ for points                                 [0-0]
+T56 P1 (CLAUDE): Play 3♠ as one-off (revive 10♥)                    [6-0]
+T57 P0 (Heuristic): Decline to counter                                 [6-0]
+T58 P0 (Heuristic): Draw                                               [6-0]
+T59 P1 (CLAUDE): Play Q♦ for protection                             [6-0]
+T60 P0 (Heuristic): Play Q♠ for protection                             [6-0]
+T61 P1 (CLAUDE): Play 10♥ for points                                [6-0]
+T62 P0 (Heuristic): Draw                                               [6-10]
+T63 P1 (CLAUDE): Draw                                               [6-10]
+T64 P0 (Heuristic): Play 4♦ as one-off (force discard)                 [6-10]
+T65 P1 (CLAUDE): Decline to counter                                 [6-10]
+T66 P1 (CLAUDE): Discard J♣                                         [6-10]
+T67 P1 (CLAUDE): Discard 5♣                                         [6-10]
+T68 P1 (CLAUDE): Draw                                               [6-10]
+T69 P0 (Heuristic): Draw                                               [6-10]
+T70 P1 (CLAUDE): Play 3♥ for points                                 [6-10]
+T71 P0 (Heuristic): Play 9♦ for points                                 [6-13]
+T72 P1 (CLAUDE): Draw                                               [15-13]
+T73 P0 (Heuristic): Draw                                               [15-13]
+T74 P1 (CLAUDE): Play 5♠ as one-off (draw two)                      [15-13]
+T75 P0 (Heuristic): Decline to counter                                 [15-13]
+T76 P0 (Heuristic): Play 6♥ for points                                 [15-13]
+
+GAME OVER - Winner: Heuristic (21-13)
+
+================================================================================
+GAME 4 (Seed 102) - Heuristic wins 15-0
+================================================================================
+
+Initial hands:
+  P0 (Heuristic): A♣, 3♦, J♦, 7♥, 9♣
+  P1 (Claude): A♥, K♣, A♦, 4♣, 6♥, 9♦
+
+T00 P0 (Heuristic): Play 9♣ for points                                 [0-0]
+T01 P1 (CLAUDE): Scuttle 9♣ with 9♦                                 [9-0]
+T02 P0 (Heuristic): Play 7♥ for points                                 [0-0]
+T03 P1 (CLAUDE): Play A♥ as one-off (scrap all points)              [7-0]
+T04 P0 (Heuristic): Decline to counter                                 [7-0]
+T05 P0 (Heuristic): Play 3♦ for points                                 [0-0]
+T06 P1 (CLAUDE): Play A♦ as one-off (scrap all points)              [3-0]
+T07 P0 (Heuristic): Decline to counter                                 [3-0]
+T08 P0 (Heuristic): Play A♣ for points                                 [0-0]
+T09 P1 (CLAUDE): Play 4♣ for points                                 [1-0]
+T10 P0 (Heuristic): Play J♦ to steal 4♣                                [1-4]
+T11 P1 (CLAUDE): Draw                                               [5-0]
+T12 P0 (Heuristic): Draw                                               [5-0]
+T13 P1 (CLAUDE): Scuttle A♣ with 6♥                                 [5-0]
+T14 P0 (Heuristic): Play 7♣ for points                                 [4-0]
+T15 P1 (CLAUDE): Scuttle 7♣ with 9♠                                 [11-0]
+T16 P0 (Heuristic): Draw                                               [4-0]
+T17 P1 (CLAUDE): Draw                                               [4-0]
+T18 P0 (Heuristic): Play K♠ to reduce win threshold                    [4-0]
+T19 P1 (CLAUDE): Play K♣ to reduce win threshold                    [4-0]
+T20 P0 (Heuristic): Draw                                               [4-0]
+T21 P1 (CLAUDE): Play 5♦ for points                                 [4-0]
+T22 P0 (Heuristic): Play Q♠ for protection                             [4-5]
+T23 P1 (CLAUDE): Draw                                               [4-5]
+T24 P0 (Heuristic): Draw                                               [4-5]
+T25 P1 (CLAUDE): Play 8♦ as Glasses (see opponent's hand)           [4-5]
+T26 P0 (Heuristic): Play 4♥ for points                                 [4-5]
+T27 P1 (CLAUDE): Draw                                               [8-5]
+T28 P0 (Heuristic): Draw                                               [8-5]
+T29 P1 (CLAUDE): Play 3♥ as one-off (revive 9♦)                     [8-5]
+T30 P0 (Heuristic): Decline to counter                                 [8-5]
+T31 P0 (Heuristic): Scuttle 5♦ with 5♥                                 [8-5]
+T32 P1 (CLAUDE): Play 9♦ as one-off (return Q♠)                     [8-0]
+T33 P0 (Heuristic): Decline to counter                                 [8-0]
+T34 P0 (Heuristic): Play Q♠ for protection                             [8-0]
+T35 P1 (CLAUDE): Draw                                               [8-0]
+T36 P0 (Heuristic): Draw                                               [8-0]
+T37 P1 (CLAUDE): Play 2♠ as one-off (destroy Q♠)                    [8-0]
+T38 P0 (Heuristic): Decline to counter                                 [8-0]
+T39 P0 (Heuristic): Play 7♦ for points                                 [8-0]
+
+GAME OVER - Winner: Heuristic (15-0)
+
+================================================================================
+ANALYSIS: Claude Haiku's Mistakes
+================================================================================
+
+BAD MOVES MADE BY CLAUDE (per 100k game analysis):
+- 8 as Glasses: 5 times (41.8% win rate move)
+- Ace as one-off: 4 times (43.8% win rate move)
+- Queens: 4 times (42.6% win rate move)
+- Scuttling: 8 times (47.5% win rate move)
+- 3 as one-off (revive): 4 times (43.0% win rate move)
+- 6 as one-off: 2 times (42.3% win rate move)
+- 9 as one-off: 1 time (41.2% win rate move)
+
+GOOD MOVES MADE BY CLAUDE:
+- Jacks to steal points: 5 times (63.9% win rate move)
+- Kings: 4 times (59.3% win rate move)
+- High point cards: Several times
+
+CONCLUSION:
+Claude Haiku plays too defensively and uses one-offs excessively.
+The simple heuristic of "play high points fast" dominates.

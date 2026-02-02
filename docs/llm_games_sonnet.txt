@@ -1,0 +1,143 @@
+# Heuristic vs Claude Sonnet - Game Results
+# Date: 2024
+# Model: claude-sonnet-4-20250514
+
+## Summary: Heuristic 6-2 Claude Sonnet (75% - 25%)
+
+### Comparison to Haiku
+- Haiku: 0-4 (0%)
+- Sonnet: 2-6 (25%)
+- Sonnet is significantly better but still loses to simple heuristic
+
+### Key Differences from Haiku
+1. Sonnet uses 7 one-off (play from deck) - the only good one-off
+2. Sonnet plays Kings more consistently
+3. Sonnet won 2 games (Haiku won 0)
+
+### Sonnet's Remaining Mistakes
+- Still uses 9 one-off (return permanent) - 41.2% win rate
+- Still uses 8 as Glasses - 41.8% win rate
+- Still uses Ace one-off when ahead - bad
+- Still scuttles excessively
+
+================================================================================
+GAME 1 (Seed 42) - Heuristic wins 17-0
+================================================================================
+T00 P0 (Heuristic): Play K♦ to reduce win threshold                    [0-0]
+T01 P1 (CLAUDE): Play K♥ to reduce win threshold                    [0-0]
+T02 P0 (Heuristic): Play 4♣ as one-off (force discard)                 [0-0]
+T03 P1 (CLAUDE): Decline to counter                                 [0-0]
+T04 P1 (CLAUDE): Discard 8♠                                         [0-0]
+T05 P1 (CLAUDE): Discard 4♦                                         [0-0]
+T06 P1 (CLAUDE): Play Q♣ for protection                             [0-0]
+T07 P0 (Heuristic): Play 10♣ for points                                [0-0]
+T08 P1 (CLAUDE): Play A♠ as one-off (scrap all points)              [10-0]
+T09 P0 (Heuristic): Decline to counter                                 [10-0]
+T10 P0 (Heuristic): Play 9♦ for points                                 [0-0]
+T11 P1 (CLAUDE): Play 7♦ as one-off (play from deck)                [9-0]  <-- Good move!
+T12 P0 (Heuristic): Decline to counter                                 [9-0]
+T13 P1 (CLAUDE): Seven: play Q♦ as PLAY_PERMANENT                   [9-0]
+T14 P0 (Heuristic): Draw                                               [9-0]
+T15 P1 (CLAUDE): Draw                                               [9-0]
+T16 P0 (Heuristic): Play 8♥ for points                                 [9-0]
+Winner: Heuristic (17-0)
+
+================================================================================
+GAME 2 (Seed 43) - SONNET WINS 20-16
+================================================================================
+T00 P0 (Heuristic): Play Q♦ for protection                             [0-0]
+T01 P1 (CLAUDE): Play 9♦ as one-off (return Q♦)                     [0-0]
+T02 P0 (Heuristic): Counter with 2♦                                    [0-0]
+T03 P1 (CLAUDE): Decline to counter                                 [0-0]
+T04 P0 (Heuristic): Play Q♠ for protection                             [0-0]
+T05 P1 (CLAUDE): Play K♠ to reduce win threshold                    [0-0]
+T06 P0 (Heuristic): Play 8♣ as Glasses (see opponent's hand)           [0-0]
+T07 P1 (CLAUDE): Play 8♦ as Glasses (see opponent's hand)           [0-0]
+T08 P0 (Heuristic): Play 5♠ for points                                 [0-0]
+T09 P1 (CLAUDE): Play 5♦ for points                                 [5-0]
+T10 P0 (Heuristic): Draw                                               [5-5]
+T11 P1 (CLAUDE): Play Q♥ for protection                             [5-5]
+T12 P0 (Heuristic): Play A♦ for points                                 [5-5]
+T13 P1 (CLAUDE): Draw                                               [6-5]
+T14 P0 (Heuristic): Draw                                               [6-5]
+T15 P1 (CLAUDE): Play 9♠ as one-off (return Q♦)                     [6-5]
+T16 P0 (Heuristic): Decline to counter                                 [6-5]
+T17 P0 (Heuristic): Play Q♦ for protection                             [6-5]
+T18 P1 (CLAUDE): Draw                                               [6-5]
+T19 P0 (Heuristic): Play A♣ for points                                 [6-5]
+T20 P1 (CLAUDE): Play A♠ as one-off (scrap all points)              [7-5]
+T21 P0 (Heuristic): Decline to counter                                 [7-5]
+T22 P0 (Heuristic): Draw                                               [0-0]
+T23 P1 (CLAUDE): Draw                                               [0-0]
+T24 P0 (Heuristic): Play 7♦ for points                                 [0-0]
+T25 P1 (CLAUDE): Play 10♥ for points                                [7-0]  <-- Good move!
+T26 P0 (Heuristic): Draw                                               [7-10]
+T27 P1 (CLAUDE): Draw                                               [7-10]
+T28 P0 (Heuristic): Play 9♣ for points                                 [7-10]
+T29 P1 (CLAUDE): Play 10♦ for points                                [16-10]  <-- Winning move!
+Winner: SONNET (16-20)
+
+================================================================================
+GAME 3 (Seed 44) - Heuristic wins 16-16 (threshold)
+================================================================================
+[Heuristic had lower threshold due to King]
+Winner: Heuristic (16-16)
+
+================================================================================
+GAME 4 (Seed 200) - Heuristic wins 13-13 (threshold)
+================================================================================
+[Close game, Sonnet used 7 one-off well]
+Winner: Heuristic (13-13)
+
+================================================================================
+GAME 5 (Seed 201) - Heuristic wins 14-12
+================================================================================
+[Sonnet wasted both 9s on returning Kings that just got replayed]
+Winner: Heuristic (14-12)
+
+================================================================================
+GAME 6 (Seed 202) - SONNET WINS 8-17
+================================================================================
+[Sonnet used 7 one-off to get King, played Jack to steal, won decisively]
+Winner: SONNET (8-17)
+
+================================================================================
+GAME 7 (Seed 203) - Heuristic wins 10-10 (threshold)
+================================================================================
+[Sonnet used Ace one-off TWICE but kept resetting the board]
+Winner: Heuristic (10-10)
+
+================================================================================
+GAME 8 (Seed 204) - Heuristic wins 21-0
+================================================================================
+[Sonnet discarded King early (forced), never recovered]
+Winner: Heuristic (21-0)
+
+================================================================================
+ANALYSIS
+================================================================================
+
+SONNET'S GOOD MOVES:
+- Uses 7 one-off (play from deck) - only good one-off
+- Plays Kings consistently
+- Plays high point cards when available
+- Uses Jacks to steal
+
+SONNET'S BAD MOVES (per 100k analysis):
+- 9 one-off (return permanent): 41.2% win rate - used 4 times
+- 8 as Glasses: 41.8% win rate - used 3 times
+- Ace one-off: 43.8% win rate - used 4 times
+- Queens: 42.6% win rate - used 4 times
+- Scuttling: 47.5% win rate - frequent
+
+KEY INSIGHT:
+Even Claude Sonnet doesn't fully understand the optimal strategy.
+The simple heuristic of "play high points fast, avoid one-offs"
+beats sophisticated reasoning 75% of the time.
+
+COMPARISON:
+- Random vs Heuristic: Heuristic wins 78.6%
+- Haiku vs Heuristic: Heuristic wins 100% (4-0)
+- Sonnet vs Heuristic: Heuristic wins 75% (6-2)
+
+Sonnet is roughly as good as playing randomly with slight improvements.
