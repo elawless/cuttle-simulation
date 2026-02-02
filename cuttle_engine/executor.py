@@ -678,6 +678,11 @@ def _execute_resolve_seven(state: GameState, move: ResolveSeven) -> GameState:
                 players[player_idx] = new_player
                 new_state = new_state.with_players((players[0], players[1]))
 
+        case MoveType.DISCARD:
+            # Card cannot be played (e.g., Jack with no targets) - goes to scrap
+            new_scrap = new_state.scrap + (move.card,)
+            new_state = new_state.with_scrap(new_scrap)
+
     # Check win and end turn
     new_state = _check_win(new_state)
     if not new_state.is_game_over:

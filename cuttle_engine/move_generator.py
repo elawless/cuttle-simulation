@@ -324,9 +324,11 @@ def _generate_seven_phase_moves(state: GameState) -> list[Move]:
     opponent = state.players[opponent_idx]
 
     for card in state.seven_state.revealed_cards:
+        card_moves: list[Move] = []
+
         # Can play for points
         if card.can_play_for_points:
-            moves.append(
+            card_moves.append(
                 ResolveSeven(card=card, play_as=MoveType.PLAY_POINTS)
             )
 
@@ -334,7 +336,7 @@ def _generate_seven_phase_moves(state: GameState) -> list[Move]:
             for target in opponent.points_field:
                 if card.can_scuttle(target):
                     if not _is_card_protected_by_queen(opponent, target):
-                        moves.append(
+                        card_moves.append(
                             ResolveSeven(
                                 card=card,
                                 play_as=MoveType.SCUTTLE,
@@ -344,14 +346,22 @@ def _generate_seven_phase_moves(state: GameState) -> list[Move]:
 
         # Can play as one-off (generates all valid one-off options)
         if card.can_play_as_one_off:
-            # Create a temporary state to generate one-off moves
             one_off_moves = _generate_seven_one_off_options(state, card, player)
-            moves.extend(one_off_moves)
+            card_moves.extend(one_off_moves)
 
         # Can play as permanent
         if card.can_play_as_permanent:
             perm_moves = _generate_seven_permanent_options(state, card, player)
-            moves.extend(perm_moves)
+            card_moves.extend(perm_moves)
+
+        # If no valid plays for this card, it must be discarded to scrap
+        # (e.g., Jack with no targets, Nine with no permanents)
+        if not card_moves:
+            card_moves.append(
+                ResolveSeven(card=card, play_as=MoveType.DISCARD)
+            )
+
+        moves.extend(card_moves)
 
     return moves
 
