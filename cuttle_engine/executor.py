@@ -637,11 +637,27 @@ def _execute_resolve_seven(state: GameState, move: ResolveSeven) -> GameState:
         case MoveType.PLAY_ONE_OFF:
             # Trigger the one-off (may enter counter phase)
             effect = _determine_one_off_effect(move.card, move.target_card)
+            # Determine target_player based on card type and target location
+            target_player = None
+            if move.card.rank == Rank.FOUR:
+                target_player = opponent_idx  # Four always targets opponent
+            elif move.card.rank == Rank.NINE and move.target_card:
+                # Nine can target either player's permanents - find which player has it
+                for pi in range(2):
+                    p = new_state.players[pi]
+                    if move.target_card in p.permanents:
+                        target_player = pi
+                        break
+                    if any(j == move.target_card for j, _ in p.jacks):
+                        target_player = pi
+                        break
+            elif move.target_card:
+                target_player = opponent_idx  # Most targeted effects hit opponent
             counter_state = CounterState(
                 one_off_card=move.card,
                 one_off_player=player_idx,
                 target_card=move.target_card,
-                target_player=opponent_idx if move.target_card else None,
+                target_player=target_player,
             )
             new_state = new_state.with_phase(GamePhase.COUNTER).with_counter_state(
                 counter_state
