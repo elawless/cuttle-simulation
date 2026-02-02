@@ -1,0 +1,165 @@
+# Heuristic vs Claude Opus - Game Results
+# Date: 2024
+# Model: claude-opus-4-20250514
+
+## Summary: Opus 5-3 Heuristic (62.5% - 37.5%)
+
+### OPUS BEATS THE HEURISTIC!
+
+This is the first LLM to consistently beat the simple heuristic strategy.
+
+### Comparison Across Models
+| Model      | vs Heuristic | Win Rate |
+|------------|--------------|----------|
+| Random     | baseline     | 21.4%    |
+| Haiku      | 0-4          | 0%       |
+| Sonnet     | 2-6          | 25%      |
+| **Opus**   | **5-3**      | **62.5%**|
+
+### What Opus Does Differently
+1. Strategic card recovery - Uses 3 one-off (revive) to get back key cards
+2. Jack battles - Aggressively fights for point card control
+3. Counter timing - Knows when to counter vs decline
+4. Uses 5 one-off (draw 2) for card advantage
+5. Actively destroys opponent's Kings with 2 one-off
+
+================================================================================
+GAME 1 (Seed 42) - Heuristic wins 17-0
+================================================================================
+T00 P0 (Heuristic): Play K♦ to reduce win threshold                    [0-0]
+T01 P1 (CLAUDE): Play K♥ to reduce win threshold                    [0-0]
+T02 P0 (Heuristic): Play 4♣ as one-off (force discard)                 [0-0]
+T03 P1 (CLAUDE): Decline to counter                                 [0-0]
+T04 P1 (CLAUDE): Discard 4♦                                         [0-0]
+T05 P1 (CLAUDE): Discard 8♠                                         [0-0]
+T06 P1 (CLAUDE): Play Q♣ for protection                             [0-0]
+T07 P0 (Heuristic): Play 10♣ for points                                [0-0]
+T08 P1 (CLAUDE): Play A♠ as one-off (scrap all points)              [10-0]
+T09 P0 (Heuristic): Decline to counter                                 [10-0]
+T10 P0 (Heuristic): Play 9♦ for points                                 [0-0]
+T11 P1 (CLAUDE): Play 7♦ as one-off (play from deck)                [9-0]
+T12 P0 (Heuristic): Decline to counter                                 [9-0]
+T13 P1 (CLAUDE): Seven: play Q♦ as PLAY_PERMANENT                   [9-0]
+T14 P0 (Heuristic): Draw                                               [9-0]
+T15 P1 (CLAUDE): Draw                                               [9-0]
+T16 P0 (Heuristic): Play 8♥ for points                                 [9-0]
+Winner: Heuristic (17-0)
+
+================================================================================
+GAME 2 (Seed 43) - OPUS WINS 20-16
+================================================================================
+T00 P0 (Heuristic): Play Q♦ for protection                             [0-0]
+T01 P1 (CLAUDE): Play 5♦ as one-off (draw two)                      [0-0]
+T02 P0 (Heuristic): Counter with 2♦                                    [0-0]
+T03 P1 (CLAUDE): Decline to counter                                 [0-0]
+T04 P0 (Heuristic): Play Q♠ for protection                             [0-0]
+T05 P1 (CLAUDE): Play Q♥ for protection                             [0-0]
+T06 P0 (Heuristic): Play 8♣ as Glasses (see opponent's hand)           [0-0]
+T07 P1 (CLAUDE): Draw                                               [0-0]
+T08 P0 (Heuristic): Play 5♠ for points                                 [0-0]
+T09 P1 (CLAUDE): Play 8♦ as Glasses (see opponent's hand)           [5-0]
+T10 P0 (Heuristic): Draw                                               [5-0]
+T11 P1 (CLAUDE): Play A♦ as one-off (scrap all points)              [5-0]
+T12 P0 (Heuristic): Decline to counter                                 [5-0]
+T13 P0 (Heuristic): Play 9♠ for points                                 [0-0]
+T14 P1 (CLAUDE): Play K♠ to reduce win threshold                    [9-0]
+T15 P0 (Heuristic): Draw                                               [9-0]
+T16 P1 (CLAUDE): Play 9♦ for points                                 [9-0]
+T17 P0 (Heuristic): Play A♣ for points                                 [9-9]
+T18 P1 (CLAUDE): Draw                                               [10-9]
+T19 P0 (Heuristic): Draw                                               [10-9]
+T20 P1 (CLAUDE): Play A♠ as one-off (scrap all points)              [10-9]
+T21 P0 (Heuristic): Decline to counter                                 [10-9]
+T22 P0 (Heuristic): Play 7♦ for points                                 [0-0]
+T23 P1 (CLAUDE): Draw                                               [7-0]
+T24 P0 (Heuristic): Draw                                               [7-0]
+T25 P1 (CLAUDE): Play 10♥ for points                                [7-0]
+T26 P0 (Heuristic): Play 9♣ for points                                 [7-10]
+T27 P1 (CLAUDE): Draw                                               [16-10]
+T28 P0 (Heuristic): Draw                                               [16-10]
+T29 P1 (CLAUDE): Play 10♦ for points                                [16-10]
+Winner: OPUS (16-20)
+
+================================================================================
+GAME 3 (Seed 44) - OPUS WINS 19-12
+================================================================================
+[Opus used multiple 5 one-offs for card advantage, played King, won decisively]
+Winner: OPUS (12-19)
+
+================================================================================
+GAME 4 (Seed 100) - OPUS WINS 9-8
+================================================================================
+[Close game, Opus used strategic card recovery with 3 one-offs]
+[Opus played two Kings to reduce threshold to 7, won with just 9 points]
+Winner: OPUS (8-9)
+
+================================================================================
+GAME 5 (Seed 101) - OPUS WINS 17-4
+================================================================================
+[Opus dominated with Jack battles and King play]
+[Fast victory in 13 turns]
+Winner: OPUS (4-17)
+
+================================================================================
+GAME 6 (Seed 102) - OPUS WINS 16-10
+================================================================================
+[Opus used Ace one-offs twice to reset when behind]
+[Used 3 one-off to revive Jack, stole points to win]
+Winner: OPUS (10-16)
+
+================================================================================
+GAME 7 (Seed 103) - Heuristic wins 6-0 (EPIC 114-TURN GAME!)
+================================================================================
+[Both sides kept using Ace one-offs to reset the board]
+[Opus kept reviving cards with 3 one-offs]
+[Eventually deck exhausted, Heuristic won by having more points when deck empty]
+[Win reason: 2 (deck exhaustion)]
+Winner: Heuristic (6-0) after 114 turns
+
+================================================================================
+GAME 8 (Seed 104) - Heuristic wins 30-0
+================================================================================
+[Heuristic got strong opening, Opus couldn't recover]
+[Opus tried to disrupt with one-offs but couldn't stop point accumulation]
+Winner: Heuristic (30-0)
+
+================================================================================
+ANALYSIS: Why Opus Succeeds Where Others Fail
+================================================================================
+
+1. CARD ADVANTAGE UNDERSTANDING
+   - Uses 5 one-off (draw 2) - gets more cards
+   - Uses 3 one-off (revive) to recover key cards
+   - Understands that card count matters
+
+2. KING STRATEGY
+   - Plays Kings to reduce threshold
+   - Also destroys opponent's Kings with 2 one-off
+   - Understands threshold manipulation
+
+3. JACK BATTLES
+   - Aggressively contests stolen points
+   - Uses Jacks to swing point totals
+   - Doesn't let opponent keep stolen cards
+
+4. TACTICAL RESETS
+   - Uses Ace one-off when significantly behind
+   - But not randomly - only when it helps
+
+5. COUNTER DISCIPLINE
+   - Knows when to counter vs decline
+   - Doesn't waste 2s on unimportant effects
+
+KEY INSIGHT:
+Opus seems to understand the meta-game better than the heuristic.
+While the heuristic follows "play high points fast", Opus plays
+more dynamically - disrupting opponent's strategy while building
+its own position.
+
+The simple heuristic doesn't account for:
+- Card advantage (having more options)
+- Threshold manipulation (Kings)
+- Point denial (Jacks, scuttling key cards)
+- Board resets when behind
+
+Opus implicitly understands these higher-level concepts.

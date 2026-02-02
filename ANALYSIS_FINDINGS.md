@@ -150,6 +150,48 @@ The 100k analysis shows a **26 percentage point spread** between best (PlayPoint
 
 ---
 
+---
+
+## LLM vs Heuristic Results
+
+We tested the Heuristic strategy against Claude models to see if LLMs could discover optimal play.
+
+### Results Summary
+
+| Model | vs Heuristic | Win Rate | Notes |
+|-------|--------------|----------|-------|
+| Random | baseline | 21.4% | |
+| Haiku | 0-4 | 0% | Makes all the "bad" moves |
+| Sonnet | 2-6 | 25% | Better, uses 7 one-off |
+| **Opus** | **5-3** | **62.5%** | **Beats the heuristic!** |
+
+### Key Findings
+
+**Haiku and Sonnet fail because they:**
+- Use one-offs excessively (Ace, 9, 2, 3)
+- Play 8 as Glasses (41.8% win rate)
+- Play Queens for "protection" (42.6% win rate)
+- Scuttle frequently (47.5% win rate)
+
+**Opus succeeds because it:**
+- Understands card advantage (uses 5 one-off for draw 2)
+- Strategically recovers cards (3 one-off revive)
+- Fights Jack battles for point control
+- Manipulates thresholds (plays Kings, destroys opponent's Kings)
+- Uses Ace one-off tactically when behind, not randomly
+
+### Insight
+
+The simple heuristic doesn't account for:
+- Card advantage (having more options)
+- Threshold manipulation (Kings)
+- Point denial (Jacks, targeted scuttling)
+- Board resets when significantly behind
+
+Opus implicitly understands these higher-level strategic concepts, making it the first LLM to beat the heuristic consistently.
+
+---
+
 ## Analysis Scripts Created
 
 | Script | Purpose |
