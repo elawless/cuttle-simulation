@@ -318,6 +318,43 @@ Don't try to control the board - just outpace your opponent.
 - Keep playing points (50.3% when ahead 8+)
 - Never scuttle (0.4%)
 
+### One-Off Usage Guidelines
+
+Based on 300-game analysis, MCTS uses one-offs very strategically:
+
+| One-Off | When MCTS Uses It | Key Pattern |
+|---------|-------------------|-------------|
+| **ACE** | 94% when behind 8+ pts | ONLY use as comeback mechanic |
+| **TWO** | Rarely (play for 2 pts) | Only destroy critical permanents |
+| **THREE** | 36% behind 8+, 28% even | Revive high-value cards from scrap |
+| **FOUR** | 81% in opening | Tempo play to disrupt opponent early |
+| **FIVE** | 65% in opening | Build card advantage early |
+| **SIX** | Almost never | 6 points > scrapping permanents |
+| **SEVEN** | 70% in opening | Tempo - like draw + play immediately |
+
+**ACE Strategy (Critical):**
+- Use ONLY when behind 8+ points (94.3% of Ace plays)
+- Never use when even or ahead (0%!)
+- Mostly opening phase (83%) - reset if opponent races ahead
+- Ace is a COMEBACK tool, not a control tool
+
+**Opening One-Offs (Turns 1-3):**
+- FOUR discard (35 plays) - disrupt opponent's hand
+- SEVEN deck play (23 plays) - tempo advantage
+- FIVE draw two (20 plays) - build hand
+- ACE only if already behind
+
+**When Behind 8+ Points:**
+- ACE scrap all (50 plays) - primary comeback
+- THREE revive (14 plays) - recover value
+- FOUR/FIVE/SEVEN - try to catch up
+
+**When Even:**
+- FOUR discard (27 plays) - maintain pressure
+- SEVEN deck play (17 plays) - tempo
+- FIVE draw (16 plays) - build advantage
+- NO Ace plays when even!
+
 ### Counter Decisions
 
 **Only counter 19% of the time!** Most one-offs aren't worth spending a card.

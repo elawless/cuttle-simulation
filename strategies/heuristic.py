@@ -165,53 +165,74 @@ class HeuristicStrategy(Strategy):
             case PlayOneOff(card=card, effect=effect):
                 from cuttle_engine.moves import OneOffEffect
 
+                # Determine game phase for one-off decisions
+                is_opening = state.turn_number <= 3
+                is_midgame = 4 <= state.turn_number <= 8
+
                 if effect == OneOffEffect.ACE_SCRAP_ALL_POINTS:
-                    # Good when behind - MCTS uses 11.1% when behind 8+
+                    # MCTS uses Ace 94% when behind 8+, NEVER when even/ahead
+                    # Ace is a COMEBACK mechanic, not control
                     if is_behind_big:
-                        return 500
+                        # 94% of Ace plays are when behind 8+
+                        return 700 if is_opening else 500
                     elif is_behind:
-                        return 300
-                    elif opp_points > my_points:
-                        return 200
-                    return 30  # Risky if we have more points
+                        # Only 5.7% when behind 3-7
+                        return 150
+                    # NEVER use Ace when even or ahead (0% in data)
+                    return -100  # Actively avoid
 
                 elif effect == OneOffEffect.TWO_DESTROY_PERMANENT:
-                    # MCTS uses 2 for points 52%, destroy only 42%
-                    # Only destroy if target is very valuable (King/Queen)
-                    return 150
+                    # MCTS uses 2 for points 52%, destroy only when necessary
+                    # Only destroy truly critical targets
+                    return 120
 
                 elif effect == OneOffEffect.THREE_REVIVE:
-                    # MCTS revives 49% of 3s! Heuristic was 0%
+                    # MCTS revives 36% when behind 8+, 28% even
                     # Check if there's a high-value card in scrap
                     high_value_in_scrap = any(
                         c.point_value >= 8 or c.rank in (Rank.KING, Rank.JACK)
                         for c in state.scrap
                     )
                     if high_value_in_scrap:
-                        return 400  # Revive is very valuable
-                    return 100
+                        if is_behind_big:
+                            return 500  # Recover value when behind
+                        elif is_behind or point_diff == 0:
+                            return 400
+                        return 200  # Lower priority when ahead
+                    return 80
 
                 elif effect == OneOffEffect.FOUR_DISCARD:
-                    # Moderate value - disrupts opponent
-                    return 180
+                    # MCTS uses Four 81% in opening - tempo play!
+                    if is_opening:
+                        return 450  # High priority early game
+                    elif is_midgame:
+                        return 200
+                    return 100  # Low priority lategame
 
                 elif effect == OneOffEffect.FIVE_DRAW_TWO:
-                    # Card advantage is good
-                    return 250
+                    # MCTS uses Five 65% in opening - card advantage
+                    if is_opening:
+                        return 400  # Build hand early
+                    elif is_midgame:
+                        return 300
+                    return 150  # Play for points lategame
 
                 elif effect == OneOffEffect.SIX_SCRAP_ALL_PERMANENTS:
+                    # MCTS almost never uses Six (2 total in 300 games)
+                    # 6 points > scrapping permanents
                     our_perms = len(state.players[player_idx].permanents)
                     opp_perms = len(state.players[1 - player_idx].permanents)
-                    if opp_perms > our_perms + 1:
-                        return 300
-                    elif opp_perms > our_perms:
-                        return 150
-                    return 30
+                    if opp_perms >= our_perms + 3:
+                        return 200  # Only if huge advantage
+                    return 30  # Almost always play for 6 points
 
                 elif effect == OneOffEffect.SEVEN_PLAY_FROM_DECK:
-                    # MCTS uses Seven one-off 27% of the time!
-                    # It's like drawing but you get to play immediately
-                    return 350
+                    # MCTS uses Seven 70% in opening - tempo play
+                    if is_opening:
+                        return 450  # High priority tempo
+                    elif is_midgame:
+                        return 300
+                    return 150  # Play for points lategame
 
                 return 100
 
