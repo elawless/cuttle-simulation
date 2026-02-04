@@ -80,8 +80,16 @@ class MCTSNode:
             moves = generate_legal_moves(self.state)
             # Order moves by heuristic score (best first) for better expansion order
             heuristic = HeuristicStrategy()
+            # Calculate context for heuristic scoring
+            player_idx = self.state.current_player
+            my_points = self.state.players[player_idx].point_total
+            opp_points = self.state.players[1 - player_idx].point_total
+            point_diff = my_points - opp_points
             # Use negative index as tiebreaker to maintain stable sort
-            scored = [(heuristic._score_move(self.state, m), -i, m) for i, m in enumerate(moves)]
+            scored = [
+                (heuristic._score_move(self.state, m, player_idx, point_diff), -i, m)
+                for i, m in enumerate(moves)
+            ]
             scored.sort(reverse=True)  # Highest score first
             self.untried_moves = [m for _, _, m in scored]
 
