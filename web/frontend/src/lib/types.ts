@@ -61,6 +61,8 @@ export interface GameState {
 	winner: number | null;
 	win_reason: string | null;
 	acting_player: number;
+	player_types: string[];
+	strategy_names: (string | null)[];
 	players: Player[];
 	counter_state: CounterState | null;
 	seven_state: SevenState | null;

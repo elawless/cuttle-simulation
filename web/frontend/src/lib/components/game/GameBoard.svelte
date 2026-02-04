@@ -3,6 +3,7 @@
 	import MoveLog from '$lib/components/game/MoveLog.svelte';
 	import StatusBar from '$lib/components/game/StatusBar.svelte';
 	import CardActionModal from '$lib/components/game/CardActionModal.svelte';
+	import PlaybackControls from '$lib/components/game/PlaybackControls.svelte';
 	import type { GameState, Move, Card as CardType } from '$lib/types';
 	import {
 		gameState,
@@ -13,9 +14,12 @@
 		isLoading,
 		error,
 		moveHistory,
-		aiThinking
+		aiThinking,
+		isPaused
 	} from '$lib/stores/gameStore';
 	import { page } from '$app/stores';
+
+	export let watchMode: boolean = false;
 
 	// Get viewer from URL (0 or 1)
 	$: viewer = parseInt($page.url.searchParams.get('viewer') || '0', 10);
@@ -29,6 +33,14 @@
 	// Player states based on viewer perspective
 	$: myState = state?.players[viewer];
 	$: oppState = state?.players[opponent];
+
+	// Get strategy names for display in watch mode
+	$: myStrategyName = state?.strategy_names?.[viewer] || `Player ${viewer + 1}`;
+	$: oppStrategyName = state?.strategy_names?.[opponent] || `Player ${opponent + 1}`;
+
+	// Labels that change based on watch mode
+	$: myLabel = watchMode ? myStrategyName : 'You';
+	$: oppLabel = watchMode ? oppStrategyName : 'Opponent';
 
 	// Modal state for card action selection
 	let modalCard: CardType | null = null;
@@ -114,7 +126,7 @@
 		<!-- Opponent Hand Strip (Top) -->
 		<div class="hand-strip opponent-hand">
 			<div class="hand-label">
-				<span class="name">Opponent</span>
+				<span class="name">{oppLabel}</span>
 				<span class="count">{oppState.hand_count} cards</span>
 			</div>
 			<div class="hand-cards">
@@ -160,9 +172,17 @@
 			<!-- Turn/Phase Info -->
 			<div class="game-info">
 				<div class="turn-badge">Turn {state.turn_number}</div>
-				<div class="phase-badge" class:your-turn={humanTurn} class:ai-turn={!humanTurn && state.winner === null}>
+				<div class="phase-badge" class:your-turn={humanTurn && !watchMode} class:ai-turn={!humanTurn && state.winner === null && !watchMode} class:paused={watchMode && $isPaused}>
 					{#if state.winner !== null}
-						{state.winner === viewer ? 'You Won!' : 'AI Wins'}
+						{state.winner === viewer ? 'P1 Won!' : 'P2 Won!'}
+					{:else if watchMode}
+						{#if $isPaused}
+							Paused
+						{:else if $aiThinking}
+							{$aiThinking.strategy}...
+						{:else}
+							Playing
+						{/if}
 					{:else if humanTurn}
 						Your Turn
 					{:else if $aiThinking}
@@ -176,6 +196,13 @@
 
 		<!-- Main Play Area -->
 		<div class="play-area">
+			<!-- Playback Controls for Watch Mode -->
+			{#if watchMode}
+				<div class="playback-container">
+					<PlaybackControls />
+				</div>
+			{/if}
+
 			<!-- Opponent Status -->
 			<StatusBar
 				points={oppState.point_total}
@@ -184,6 +211,7 @@
 				yourTurn={false}
 				queensCount={oppState.queens_count}
 				kingsCount={oppState.kings_count}
+				playerLabel={watchMode ? oppLabel.toUpperCase() : ''}
 			/>
 
 			<!-- Opponent Field -->
@@ -270,9 +298,10 @@
 				points={myState.point_total}
 				goal={myState.point_threshold}
 				isYou={true}
-				yourTurn={humanTurn}
+				yourTurn={humanTurn && !watchMode}
 				queensCount={myState.queens_count}
 				kingsCount={myState.kings_count}
+				playerLabel={watchMode ? myLabel.toUpperCase() : ''}
 			/>
 
 			<!-- Special States -->
@@ -333,11 +362,11 @@
 		</div>
 
 		<!-- Player Hand Strip (Bottom) -->
-		<div class="hand-strip player-hand" class:your-turn={humanTurn}>
+		<div class="hand-strip player-hand" class:your-turn={humanTurn && !watchMode}>
 			<div class="hand-label">
-				<span class="name">You</span>
+				<span class="name">{myLabel}</span>
 				<span class="count">{myState.hand.length} cards</span>
-				{#if humanTurn && state.phase === 'MAIN'}
+				{#if humanTurn && state.phase === 'MAIN' && !watchMode}
 					{#if passMove}
 						<button class="pass-btn" on:click={() => handleSelectMove(passMove)}>Pass</button>
 					{/if}
@@ -571,9 +600,18 @@
 		animation: pulse 1.5s infinite;
 	}
 
+	.phase-badge.paused {
+		background: #6366f1;
+		color: white;
+	}
+
 	@keyframes pulse {
 		0%, 100% { opacity: 1; }
 		50% { opacity: 0.7; }
+	}
+
+	.playback-container {
+		margin-bottom: 12px;
 	}
 
 	/* Main Play Area */

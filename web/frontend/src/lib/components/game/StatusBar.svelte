@@ -5,10 +5,11 @@
 	export let yourTurn: boolean = false;
 	export let queensCount: number = 0;
 	export let kingsCount: number = 0;
+	export let playerLabel: string = '';
 </script>
 
 <div class="status-bar" class:your-turn={yourTurn && isYou}>
-	<span class="label">{isYou ? 'YOU' : 'OPPONENT'}</span>
+	<span class="label">{playerLabel || (isYou ? 'YOU' : 'OPPONENT')}</span>
 	<span class="divider">|</span>
 	<span class="stat">POINTS: <strong>{points}</strong></span>
 	<span class="stat">GOAL: <strong>{goal}</strong></span>

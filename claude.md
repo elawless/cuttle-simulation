@@ -420,6 +420,12 @@ When even/ahead, Jack recovers both point-stealing ability and board presence.
 ### Running the Web UI
 
 ```bash
+# Activate virtual environment first
+source .venv/bin/activate
+
+# Install API dependencies (includes WebSocket support)
+pip install -e ".[api]"
+
 # Terminal 1: Start backend (loads .env automatically)
 python run_server.py
 
@@ -529,6 +535,63 @@ if (card.rank === 3 && move.type === 'PLAY_ONE_OFF' && move.target) {
 ```
 Same pattern for: 2 (destroy permanent), 9 (return to hand), Jack (steal), Scuttle
 
+#### 9. WebSocket Connection Fails (No WebSocket Library)
+
+**Symptom**: `WebSocket connection error` in browser, backend shows `No supported WebSocket library detected`
+**Cause**: `uvicorn` was installed without WebSocket support
+**Fix**: Install uvicorn with standard extras:
+```bash
+pip install 'uvicorn[standard]'
+```
+The `pyproject.toml` now specifies `uvicorn[standard]>=0.27` in the `api` dependencies.
+
+#### 10. WebSocket Query Parameters Not Parsing (FastAPI)
+
+**Symptom**: WebSocket connection fails silently, or parameters like `watch=true` not recognized
+**Cause**: FastAPI WebSocket endpoints don't auto-parse query parameters the same way HTTP endpoints do
+**Fix**: Parse query parameters manually in the WebSocket handler:
+```python
+@router.websocket("/ws/game/{game_id}")
+async def game_websocket(websocket: WebSocket, game_id: str):
+    # Parse query parameters manually
+    query_params = dict(websocket.query_params)
+    viewer = int(query_params.get("viewer", "0"))
+    watch = query_params.get("watch", "").lower() == "true"
+    speed = int(query_params.get("speed", "500"))
+```
+
+#### 11. WebSocket URL Mismatch (Development)
+
+**Symptom**: WebSocket connects to wrong URL, connection refused
+**Cause**: Vite proxy doesn't reliably forward WebSocket connections
+**Fix**: In development, connect directly to backend:
+```typescript
+const isDev = window.location.port === '5173';
+if (isDev) {
+    wsUrl = `ws://localhost:8000/api/ws/game/${gameId}?...`;
+} else {
+    wsUrl = `${protocol}//${window.location.host}/api/ws/game/${gameId}?...`;
+}
+```
+
+### AI vs AI Observer Mode
+
+The web UI supports watching AI vs AI games with playback controls:
+
+**Features**:
+- Select strategies for both players on home page
+- Set game speed (0.1s to 2s per turn)
+- Pause/Play/Step controls during game
+- Game starts paused - click Play to begin
+- Replay button after game ends to step through move history
+- Strategy names shown instead of "You"/"Opponent"
+
+**How it works**:
+1. `watch_mode=true` passed to game creation API prevents auto-running AI turns
+2. WebSocket sends `pause`, `resume`, `step`, `set_speed` commands
+3. Backend respects `session.is_paused` and `session.move_delay_ms`
+4. Client state includes `strategy_names` for display
+
 ### WebSocket Protocol
 
 **Server → Client messages**:
@@ -536,10 +599,15 @@ Same pattern for: 2 (destroy permanent), 9 (return to hand), Jack (steal), Scutt
 - `move_made`: Move was executed (includes move details)
 - `ai_thinking`: AI is computing (shows strategy name)
 - `legal_moves`: Updated move list
+- `playback_state`: Pause/speed state for observer mode
 - `error`: Error message
 
 **Client → Server messages**:
 - `select_move`: `{ type: "select_move", move_index: number }`
+- `pause`: Pause AI execution (observer mode)
+- `resume`: Resume AI execution (observer mode)
+- `step`: Execute single AI turn (observer mode)
+- `set_speed`: `{ type: "set_speed", delay_ms: number }` (observer mode)
 
 ### Frontend State Management
 

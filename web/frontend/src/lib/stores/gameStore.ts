@@ -18,6 +18,10 @@ export const error = writable<string | null>(null);
 export const selectedMoveIndex = writable<number | null>(null);
 export const aiThinking = writable<{ player: number; strategy: string } | null>(null);
 
+// Playback controls for observer mode
+export const isPaused = writable<boolean>(true);
+export const playbackSpeed = writable<number>(500);
+
 // WebSocket connection
 let ws: WebSocket | null = null;
 
@@ -52,7 +56,8 @@ export async function createGame(
 	player1Type: 'human' | 'ai',
 	player1Strategy: string | null,
 	seed?: number,
-	handLimit?: number | null
+	handLimit?: number | null,
+	watchMode?: boolean
 ): Promise<string> {
 	isLoading.set(true);
 	error.set(null);
@@ -71,7 +76,8 @@ export async function createGame(
 					strategy: player1Strategy
 				},
 				seed,
-				hand_limit: handLimit
+				hand_limit: handLimit,
+				watch_mode: watchMode ?? false
 			})
 		});
 
@@ -153,18 +159,34 @@ export async function makeMove(moveIndex: number, viewer: number = 0): Promise<v
 /**
  * Connect to game WebSocket for real-time updates.
  */
-export function connectWebSocket(gameId: string, viewer: number = 0): void {
+export function connectWebSocket(gameId: string, viewer: number = 0, watch: boolean = false, initialSpeed?: number): void {
 	if (ws) {
 		ws.close();
 	}
 
-	const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-	const wsUrl = `${protocol}//${window.location.host}/ws/game/${gameId}?viewer=${viewer}`;
+	const watchParam = watch ? '&watch=true' : '';
+	const speedParam = initialSpeed ? `&speed=${initialSpeed}` : '';
 
+	// In development, connect directly to backend; in production, use relative path
+	const isDev = window.location.port === '5173';
+	let wsUrl: string;
+
+	if (isDev) {
+		// Development: connect directly to backend on port 8000
+		wsUrl = `ws://localhost:8000/api/ws/game/${gameId}?viewer=${viewer}${watchParam}${speedParam}`;
+	} else {
+		// Production: use same host
+		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+		wsUrl = `${protocol}//${window.location.host}/api/ws/game/${gameId}?viewer=${viewer}${watchParam}${speedParam}`;
+	}
+
+	console.log('Connecting WebSocket to:', wsUrl);
 	ws = new WebSocket(wsUrl);
 
 	ws.onopen = () => {
-		console.log('WebSocket connected');
+		console.log('WebSocket connected to:', wsUrl);
+		// Clear any previous error
+		error.set(null);
 	};
 
 	ws.onmessage = (event) => {
@@ -179,6 +201,16 @@ export function connectWebSocket(gameId: string, viewer: number = 0): void {
 					isHumanTurn.set(data.is_human_turn);
 					aiThinking.set(null);
 					isLoading.set(false);
+					// Update playback state if present
+					if (data.playback) {
+						isPaused.set(data.playback.paused);
+						playbackSpeed.set(data.playback.delay_ms);
+					}
+					break;
+
+				case 'playback_state':
+					isPaused.set(data.paused);
+					playbackSpeed.set(data.delay_ms);
 					break;
 
 				case 'move_made':
@@ -218,12 +250,13 @@ export function connectWebSocket(gameId: string, viewer: number = 0): void {
 	};
 
 	ws.onerror = (event) => {
-		console.error('WebSocket error:', event);
-		error.set('WebSocket connection error');
+		console.error('WebSocket connection failed to:', wsUrl);
+		console.error('WebSocket error event:', event);
+		error.set('WebSocket connection error - check if backend is running on port 8000');
 	};
 
-	ws.onclose = () => {
-		console.log('WebSocket disconnected');
+	ws.onclose = (event) => {
+		console.log('WebSocket disconnected, code:', event.code, 'reason:', event.reason);
 		ws = null;
 	};
 }
@@ -265,5 +298,44 @@ export function resetGame(): void {
 	selectedMoveIndex.set(null);
 	aiThinking.set(null);
 	isLoading.set(false);
+	isPaused.set(true);
+	playbackSpeed.set(500);
 	disconnectWebSocket();
+}
+
+/**
+ * Playback control functions for observer mode.
+ */
+export function sendPause(): void {
+	if (ws && ws.readyState === WebSocket.OPEN) {
+		console.log('Sending pause command');
+		ws.send(JSON.stringify({ type: 'pause' }));
+	} else {
+		console.warn('Cannot send pause - WebSocket not connected, state:', ws?.readyState);
+	}
+}
+
+export function sendResume(): void {
+	if (ws && ws.readyState === WebSocket.OPEN) {
+		console.log('Sending resume command');
+		ws.send(JSON.stringify({ type: 'resume' }));
+	} else {
+		console.warn('Cannot send resume - WebSocket not connected, state:', ws?.readyState);
+	}
+}
+
+export function sendStep(): void {
+	if (ws && ws.readyState === WebSocket.OPEN) {
+		console.log('Sending step command');
+		ws.send(JSON.stringify({ type: 'step' }));
+	} else {
+		console.warn('Cannot send step - WebSocket not connected, state:', ws?.readyState);
+	}
+}
+
+export function sendSetSpeed(delayMs: number): void {
+	if (ws && ws.readyState === WebSocket.OPEN) {
+		ws.send(JSON.stringify({ type: 'set_speed', delay_ms: delayMs }));
+		playbackSpeed.set(delayMs);
+	}
 }

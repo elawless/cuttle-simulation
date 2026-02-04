@@ -39,6 +39,7 @@ class CreateGameRequest(BaseModel):
     player1: PlayerConfigRequest
     seed: int | None = Field(None, description="Random seed for reproducibility")
     hand_limit: int | None = Field(None, description="Max hand size (None=unlimited, 8=standard variant)")
+    watch_mode: bool = Field(False, description="If True, don't auto-run AI turns (for observer mode)")
 
 
 class GameStateResponse(BaseModel):
@@ -108,8 +109,9 @@ async def create_game(request: CreateGameRequest):
             hand_limit=request.hand_limit,
         )
 
-        # If AI vs AI or AI goes first, run initial AI turns
-        if not session.is_human_turn:
+        # In watch mode, don't auto-run AI turns - let WebSocket control it
+        # Otherwise, if AI goes first, run initial AI turns
+        if not request.watch_mode and not session.is_human_turn:
             await session_manager.run_ai_turns_until_human(session)
 
         return {
@@ -287,7 +289,7 @@ ws_manager = ConnectionManager()
 
 
 @router.websocket("/ws/game/{game_id}")
-async def game_websocket(websocket: WebSocket, game_id: str, viewer: int = 0):
+async def game_websocket(websocket: WebSocket, game_id: str):
     """WebSocket endpoint for real-time game updates.
 
     Protocol:
@@ -295,19 +297,37 @@ async def game_websocket(websocket: WebSocket, game_id: str, viewer: int = 0):
         - game_state: Full game state update
         - legal_moves: Available moves for current player
         - move_made: A move was executed
+        - playback_state: Pause/speed state for observer mode
         - error: Error message
 
     Client -> Server messages:
         - select_move: {move_index: int} - Select and execute a move
         - get_state: Request current state
         - get_moves: Request legal moves
+        - pause: Pause AI execution (observer mode)
+        - resume: Resume AI execution (observer mode)
+        - step: Execute single AI turn (observer mode)
+        - set_speed: {delay_ms: int} - Set delay between moves (observer mode)
     """
+    # Parse query parameters manually (WebSocket doesn't auto-parse like HTTP)
+    query_params = dict(websocket.query_params)
+    viewer = int(query_params.get("viewer", "0"))
+    watch = query_params.get("watch", "").lower() == "true"
+    speed = int(query_params.get("speed", "500"))
+
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"WebSocket connection: game_id={game_id}, viewer={viewer}, watch={watch}, speed={speed}")
+
     session = session_manager.get_session(game_id)
     if not session:
+        logger.warning(f"WebSocket: Game not found: {game_id}")
         await websocket.close(code=4004, reason="Game not found")
         return
 
+    logger.info(f"WebSocket: Found session, connecting...")
     await ws_manager.connect(websocket, game_id)
+    logger.info(f"WebSocket: Connected successfully")
 
     # Set up listener for state changes from other sources
     async def on_state_change(event: dict):
@@ -327,13 +347,23 @@ async def game_websocket(websocket: WebSocket, game_id: str, viewer: int = 0):
 
     session.add_listener(queue_event)
 
+    # In watch mode, start paused so observer can control playback
+    if watch:
+        session.is_paused = True
+        # Apply initial speed from URL parameter
+        session.move_delay_ms = max(50, min(5000, speed))
+
     try:
-        # Send initial state
+        # Send initial state with playback info
         await websocket.send_json({
             "type": "game_state",
             "state": session.to_client_state(viewer=viewer),
             "legal_moves": session.moves_to_client(session.legal_moves),
             "is_human_turn": session.is_human_turn,
+            "playback": {
+                "paused": session.is_paused,
+                "delay_ms": session.move_delay_ms,
+            } if watch else None,
         })
 
         # Start task to forward events from queue
@@ -427,6 +457,66 @@ async def game_websocket(websocket: WebSocket, game_id: str, viewer: int = 0):
                     await websocket.send_json({
                         "type": "legal_moves",
                         "moves": session.moves_to_client(session.legal_moves),
+                    })
+
+                elif msg_type == "pause":
+                    session.is_paused = True
+                    await websocket.send_json({
+                        "type": "playback_state",
+                        "paused": session.is_paused,
+                        "delay_ms": session.move_delay_ms,
+                    })
+
+                elif msg_type == "resume":
+                    session.is_paused = False
+                    await websocket.send_json({
+                        "type": "playback_state",
+                        "paused": session.is_paused,
+                        "delay_ms": session.move_delay_ms,
+                    })
+                    # Run AI turns with observer mode
+                    if not session.state.is_game_over and not session.is_human_turn:
+                        await session_manager.run_ai_turns_until_human(session, observer_mode=True)
+                        await websocket.send_json({
+                            "type": "game_state",
+                            "state": session.to_client_state(viewer=viewer),
+                            "legal_moves": session.moves_to_client(session.legal_moves),
+                            "is_human_turn": session.is_human_turn,
+                            "playback": {
+                                "paused": session.is_paused,
+                                "delay_ms": session.move_delay_ms,
+                            },
+                        })
+
+                elif msg_type == "step":
+                    # Execute a single AI turn
+                    if session.state.is_game_over:
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": "Game is already over",
+                        })
+                        continue
+
+                    move, thinking = await session_manager.run_single_ai_turn(session)
+                    await websocket.send_json({
+                        "type": "game_state",
+                        "state": session.to_client_state(viewer=viewer),
+                        "legal_moves": session.moves_to_client(session.legal_moves),
+                        "is_human_turn": session.is_human_turn,
+                        "playback": {
+                            "paused": session.is_paused,
+                            "delay_ms": session.move_delay_ms,
+                        },
+                    })
+
+                elif msg_type == "set_speed":
+                    delay_ms = data.get("delay_ms", 500)
+                    # Clamp to reasonable range
+                    session.move_delay_ms = max(50, min(5000, delay_ms))
+                    await websocket.send_json({
+                        "type": "playback_state",
+                        "paused": session.is_paused,
+                        "delay_ms": session.move_delay_ms,
                     })
 
                 else:

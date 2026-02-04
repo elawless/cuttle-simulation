@@ -5,8 +5,11 @@
 
 	let strategies: { name: string; description: string }[] = [];
 	let selectedStrategy = 'heuristic';
-	let handLimit: number | null = 8;  // Default to 8-card limit
-	let humanGoesFirst = true;  // true = human is player 0, false = human is player 1
+	let player0Strategy = 'heuristic';  // For AI vs AI mode
+	let player1Strategy = 'mcts';       // For AI vs AI mode
+	let handLimit: number | null = 8;   // Default to 8-card limit
+	let humanGoesFirst = true;          // true = human is player 0, false = human is player 1
+	let gameSpeed = 500;                // Delay between AI moves in ms
 	let isCreating = false;
 	let error: string | null = null;
 
@@ -44,8 +47,8 @@
 		error = null;
 
 		try {
-			const gameId = await createGame('ai', 'heuristic', 'ai', selectedStrategy, undefined, handLimit);
-			goto(`/game/${gameId}?watch=true`);
+			const gameId = await createGame('ai', player0Strategy, 'ai', player1Strategy, undefined, handLimit, true);
+			goto(`/game/${gameId}?watch=true&speed=${gameSpeed}`);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to create game';
 			isCreating = false;
@@ -104,7 +107,46 @@
 						Play vs AI
 					{/if}
 				</button>
+			</div>
 
+			<div class="divider"></div>
+
+			<h3>AI vs AI Match</h3>
+
+			<div class="ai-vs-ai-setup">
+				<div class="form-group">
+					<label for="player0Strategy">Player 1 (goes first)</label>
+					<select id="player0Strategy" bind:value={player0Strategy} disabled={isCreating}>
+						{#each strategies as strategy}
+							<option value={strategy.name}>{strategy.name}</option>
+						{/each}
+					</select>
+				</div>
+
+				<span class="vs">vs</span>
+
+				<div class="form-group">
+					<label for="player1Strategy">Player 2</label>
+					<select id="player1Strategy" bind:value={player1Strategy} disabled={isCreating}>
+						{#each strategies as strategy}
+							<option value={strategy.name}>{strategy.name}</option>
+						{/each}
+					</select>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="gameSpeed">Game Speed</label>
+				<select id="gameSpeed" bind:value={gameSpeed} disabled={isCreating}>
+					<option value={100}>Fast (0.1s per turn)</option>
+					<option value={300}>Quick (0.3s per turn)</option>
+					<option value={500}>Normal (0.5s per turn)</option>
+					<option value={1000}>Slow (1s per turn)</option>
+					<option value={2000}>Very Slow (2s per turn)</option>
+				</select>
+			</div>
+
+			<div class="actions">
 				<button class="btn secondary" on:click={watchAiGame} disabled={isCreating}>
 					Watch AI vs AI
 				</button>
@@ -276,6 +318,37 @@
 
 	.btn.secondary:hover:not(:disabled) {
 		background: #475569;
+	}
+
+	.divider {
+		height: 1px;
+		background: #334155;
+		margin: 20px 0;
+	}
+
+	.card h3 {
+		margin: 0 0 12px 0;
+		font-size: 16px;
+		color: #94a3b8;
+	}
+
+	.ai-vs-ai-setup {
+		display: flex;
+		align-items: flex-end;
+		gap: 12px;
+		margin-bottom: 16px;
+	}
+
+	.ai-vs-ai-setup .form-group {
+		flex: 1;
+		margin-bottom: 0;
+	}
+
+	.vs {
+		padding-bottom: 10px;
+		color: #64748b;
+		font-weight: 600;
+		font-size: 14px;
 	}
 
 	.rules {

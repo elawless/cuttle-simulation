@@ -23,7 +23,8 @@ llm = [
 ]
 api = [
     "fastapi>=0.110",
-    "uvicorn>=0.27",
+    "uvicorn[standard]>=0.27",
+    "python-dotenv>=1.0",
 ]
 cloud = [
     "modal>=0.60",

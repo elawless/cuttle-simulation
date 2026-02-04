@@ -49,6 +49,8 @@ class GameSession:
     move_history: list[dict] = field(default_factory=list)
     is_paused: bool = False
     hand_limit: int | None = None  # None = no limit, 8 = standard variant
+    move_delay_ms: int = 500  # Delay between AI moves in observer mode
+    step_requested: bool = False  # For single-step mode
 
     # Callbacks for WebSocket notifications
     _state_listeners: list[Callable[[dict], None]] = field(default_factory=list)
@@ -170,6 +172,12 @@ class GameSession:
             "winner": state.winner,
             "win_reason": state.win_reason.name if state.win_reason else None,
             "acting_player": self._get_acting_player(),
+            "player_types": [
+                self.player_configs[i].player_type.value for i in range(2)
+            ],
+            "strategy_names": [
+                self.player_configs[i].strategy_name for i in range(2)
+            ],
             "players": [
                 {
                     "index": i,
@@ -474,21 +482,59 @@ class GameSessionManager:
             logger.error(f"Move execution error: {e}")
             return None, None
 
-    async def run_ai_turns_until_human(self, session: GameSession) -> list[tuple[Move, dict | None]]:
+    async def run_ai_turns_until_human(
+        self, session: GameSession, observer_mode: bool = False
+    ) -> list[tuple[Move, dict | None]]:
         """Run AI turns until it's a human's turn or game ends.
+
+        Args:
+            session: The game session
+            observer_mode: If True, respect pause/step state and delay between moves
 
         Returns list of (move, llm_thinking) tuples.
         """
         results = []
         while not session.state.is_game_over and not session.is_human_turn:
+            # In observer mode, respect pause state
+            if observer_mode:
+                if session.is_paused and not session.step_requested:
+                    # Wait for resume or step
+                    break
+                # Clear step request after processing
+                if session.step_requested:
+                    session.step_requested = False
+
             move, thinking = await self.run_ai_turn(session)
             if move:
                 results.append((move, thinking))
             else:
                 break
-            # Minimal delay - just yield to event loop
-            await asyncio.sleep(0.05)
+
+            # In observer mode, apply configured delay and pause after each move if stepping
+            if observer_mode:
+                await asyncio.sleep(session.move_delay_ms / 1000.0)
+                # If we were stepping, pause after the move
+                if not session.is_paused:
+                    # Continue to next move
+                    pass
+                else:
+                    # Paused - stop after this move
+                    break
+            else:
+                # Minimal delay - just yield to event loop
+                await asyncio.sleep(0.05)
+
         return results
+
+    async def run_single_ai_turn(self, session: GameSession) -> tuple[Move | None, dict | None]:
+        """Run a single AI turn (for step mode).
+
+        Returns (move, llm_thinking) tuple or (None, None) if no move.
+        """
+        if session.state.is_game_over or session.is_human_turn:
+            return None, None
+
+        return await self.run_ai_turn(session)
 
 
 class StrategyFactory:
