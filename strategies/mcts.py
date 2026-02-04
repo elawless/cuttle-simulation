@@ -243,15 +243,7 @@ class MCTSStrategy(Strategy):
             result = self._simulate(node.state, node.player_just_moved)
 
             # Backpropagation: update statistics up the tree
-            while node is not None:
-                # Result is from perspective of player_just_moved
-                # We need to flip it for the parent's perspective
-                if node.player_just_moved is not None:
-                    node.update(result if result is not None else 0.5)
-                    # Flip result for next level (opponent's perspective)
-                    if result is not None:
-                        result = 1.0 - result
-                node = node.parent
+            self._backpropagate(node, result)
 
         # Select move with highest visit count (most robust)
         if not root.children:
@@ -325,6 +317,35 @@ class MCTSStrategy(Strategy):
             return 0.0
         return 0.5  # Draw
 
+    def _backpropagate(self, node: MCTSNode, result: float | None) -> None:
+        """Backpropagate a simulation result up the tree.
+
+        The result is from the perspective of node.player_just_moved.
+        Only flip perspective when the acting player actually changes
+        between parent/child (e.g., Seven resolution or Four discard can
+        give the same player multiple consecutive moves).
+        """
+        current_result = 0.5 if result is None else result
+        can_flip = result is not None
+
+        while node is not None:
+            # Always increment visits so parent UCB1 is well-defined (including root)
+            node.visits += 1
+
+            if node.player_just_moved is not None:
+                node.wins += current_result
+
+                if can_flip:
+                    parent = node.parent
+                    if (
+                        parent is not None
+                        and parent.player_just_moved is not None
+                        and parent.player_just_moved != node.player_just_moved
+                    ):
+                        current_result = 1.0 - current_result
+
+            node = node.parent
+
     def select_move_with_stats(
         self, state: GameState, legal_moves: list[Move]
     ) -> tuple[Move, dict[Move, dict]]:
@@ -374,12 +395,7 @@ class MCTSStrategy(Strategy):
             result = self._simulate(node.state, node.player_just_moved)
 
             # Backpropagation: update statistics up the tree
-            while node is not None:
-                if node.player_just_moved is not None:
-                    node.update(result if result is not None else 0.5)
-                    if result is not None:
-                        result = 1.0 - result
-                node = node.parent
+            self._backpropagate(node, result)
 
         # Collect statistics
         stats = {}

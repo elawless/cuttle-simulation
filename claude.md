@@ -95,14 +95,23 @@ except Exception:
 - Each node's parent made the *opposite* player's move
 - If you don't flip, MCTS will prefer moves that help the opponent!
 
+**Important nuance**: Some phases give the same player multiple consecutive actions
+(e.g., `RESOLVE_SEVEN`, `DISCARD_FOUR`). In those cases, *do not* flip the
+result between parent/child when `player_just_moved` is the same. Only flip
+when the acting player actually changes.
+
 **Correct pattern**:
 ```python
 while node is not None:
     if node.player_just_moved is not None:
         node.update(result)
-        result = 1.0 - result  # Flip for parent's perspective
+        # Flip only if acting player changes between parent/child
+        result = 1.0 - result
     node = node.parent
 ```
+
+In code, this is now handled by a `_backpropagate(...)` helper that only flips
+when `parent.player_just_moved != node.player_just_moved`.
 
 ### Error 4: MCTS ~50% Win Rate (Should Be >70%)
 
@@ -137,6 +146,15 @@ move = node.untried_moves[0]  # Already sorted by heuristic score
 ```
 
 **Result**: Win rate improved from ~50% to ~78% vs Random.
+
+### Error 5: Root Visits Never Incremented
+
+**Symptom**: After full expansion, selection keeps choosing the same child
+because UCB1 still returns `inf` for children whose parent (root) has `visits = 0`.
+
+**Fix**: Backpropagation must increment visits for *all* nodes, including the root.
+This ensures UCB1 for depth-1 children becomes finite and selection meaningfully
+balances exploration/exploitation.
 
 ## Testing Guidelines
 
