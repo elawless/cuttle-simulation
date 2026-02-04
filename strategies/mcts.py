@@ -11,11 +11,44 @@ from cuttle_engine.executor import execute_move
 from cuttle_engine.move_generator import generate_legal_moves
 from cuttle_engine.state import GamePhase
 from strategies.base import Strategy
+from strategies.heuristic import HeuristicStrategy
 from strategies.random_strategy import RandomStrategy
 
 if TYPE_CHECKING:
     from cuttle_engine.moves import Move
     from cuttle_engine.state import GameState
+
+
+class EpsilonGreedyStrategy(Strategy):
+    """Hybrid strategy: mostly heuristic with some random exploration.
+
+    This strategy uses heuristic-guided moves most of the time (1 - epsilon),
+    but occasionally makes random moves (epsilon) to add diversity.
+    This provides better signal than pure random rollouts while avoiding
+    overfitting to heuristic blind spots.
+    """
+
+    def __init__(self, epsilon: float = 0.2, seed: int | None = None):
+        """Initialize epsilon-greedy strategy.
+
+        Args:
+            epsilon: Probability of making a random move (0.2 = 20% random).
+            seed: Random seed for reproducibility.
+        """
+        self._epsilon = epsilon
+        self._rng = random.Random(seed)
+        self._heuristic = HeuristicStrategy(seed)
+        self._random = RandomStrategy(seed)
+
+    @property
+    def name(self) -> str:
+        return f"EpsilonGreedy({self._epsilon})"
+
+    def select_move(self, state: GameState, legal_moves: list[Move]) -> Move:
+        """Select a move using epsilon-greedy strategy."""
+        if self._rng.random() < self._epsilon:
+            return self._random.select_move(state, legal_moves)
+        return self._heuristic.select_move(state, legal_moves)
 
 
 @dataclass
@@ -44,7 +77,13 @@ class MCTSNode:
 
     def __post_init__(self):
         if self.untried_moves is None:
-            self.untried_moves = generate_legal_moves(self.state)
+            moves = generate_legal_moves(self.state)
+            # Order moves by heuristic score (best first) for better expansion order
+            heuristic = HeuristicStrategy()
+            # Use negative index as tiebreaker to maintain stable sort
+            scored = [(heuristic._score_move(self.state, m), -i, m) for i, m in enumerate(moves)]
+            scored.sort(reverse=True)  # Highest score first
+            self.untried_moves = [m for _, _, m in scored]
 
     @property
     def is_fully_expanded(self) -> bool:
@@ -122,7 +161,10 @@ class MCTSNode:
 class MCTSStrategy(Strategy):
     """Monte Carlo Tree Search strategy.
 
-    Uses UCB1 for selection and random rollouts for evaluation.
+    Uses UCB1 for selection and epsilon-greedy rollouts for evaluation.
+    Rollouts use 80% heuristic moves and 20% random moves by default,
+    providing better signal than pure random while maintaining diversity.
+
     This is an "open information" version - it assumes perfect information
     about the game state. For hidden information (opponent's hand),
     use ISMCTSStrategy instead.
@@ -141,13 +183,15 @@ class MCTSStrategy(Strategy):
         Args:
             iterations: Number of MCTS iterations per move.
             exploration_constant: UCB1 exploration parameter (sqrt(2) is standard).
-            simulation_strategy: Strategy for rollouts (RandomStrategy if None).
+            simulation_strategy: Strategy for rollouts (EpsilonGreedyStrategy if None).
             seed: Random seed for reproducibility.
             max_simulation_depth: Maximum moves in a simulation before giving up.
         """
         self._iterations = iterations
         self._exploration = exploration_constant
-        self._simulation_strategy = simulation_strategy or RandomStrategy(seed)
+        self._simulation_strategy = simulation_strategy or EpsilonGreedyStrategy(
+            epsilon=0.2, seed=seed
+        )
         self._rng = random.Random(seed)
         self._max_sim_depth = max_simulation_depth
 
@@ -182,10 +226,10 @@ class MCTSStrategy(Strategy):
             while not node.is_terminal and node.is_fully_expanded and node.children:
                 node = node.best_child(self._exploration)
 
-            # Expansion: add a new child for an untried move
+            # Expansion: add a new child for an untried move (best heuristic score first)
             expanded = False
             while not node.is_terminal and node.untried_moves and not expanded:
-                move = self._rng.choice(node.untried_moves)
+                move = node.untried_moves[0]  # Already sorted by heuristic score
                 try:
                     new_state = execute_move(node.state, move)
                     player_just_moved = self._get_acting_player(node.state)
@@ -314,10 +358,10 @@ class MCTSStrategy(Strategy):
             while not node.is_terminal and node.is_fully_expanded and node.children:
                 node = node.best_child(self._exploration)
 
-            # Expansion: add a new child for an untried move
+            # Expansion: add a new child for an untried move (best heuristic score first)
             expanded = False
             while not node.is_terminal and node.untried_moves and not expanded:
-                move = self._rng.choice(node.untried_moves)
+                move = node.untried_moves[0]  # Already sorted by heuristic score
                 try:
                     new_state = execute_move(node.state, move)
                     player_just_moved = self._get_acting_player(node.state)

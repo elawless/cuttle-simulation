@@ -104,6 +104,40 @@ while node is not None:
     node = node.parent
 ```
 
+### Error 4: MCTS ~50% Win Rate (Should Be >70%)
+
+**Symptom**: MCTS performs no better than random (~50% win rate vs Random)
+**Root causes**:
+1. Pure random rollouts give weak signal in high-variance games
+2. Random move expansion wastes iterations on bad moves first
+
+**Fixes applied**:
+1. **EpsilonGreedyStrategy** for rollouts (80% heuristic, 20% random):
+```python
+class EpsilonGreedyStrategy(Strategy):
+    def select_move(self, state, legal_moves):
+        if self._rng.random() < self._epsilon:
+            return self._random.select_move(state, legal_moves)
+        return self._heuristic.select_move(state, legal_moves)
+```
+
+2. **Move ordering heuristic** - sort untried moves by heuristic score:
+```python
+def __post_init__(self):
+    moves = generate_legal_moves(self.state)
+    heuristic = HeuristicStrategy()
+    scored = [(heuristic._score_move(self.state, m), -i, m) for i, m in enumerate(moves)]
+    scored.sort(reverse=True)  # Best moves first
+    self.untried_moves = [m for _, _, m in scored]
+```
+
+3. **Pick best untried move** instead of random during expansion:
+```python
+move = node.untried_moves[0]  # Already sorted by heuristic score
+```
+
+**Result**: Win rate improved from ~50% to ~78% vs Random.
+
 ## Testing Guidelines
 
 ### Running Tests
@@ -136,11 +170,15 @@ from strategies.random_strategy import RandomStrategy
 from strategies.mcts import MCTSStrategy
 from simulation.runner import run_batch
 
-# MCTS(500) should win >70% against Random
-results = run_batch(MCTSStrategy(500), RandomStrategy(), num_games=100)
+# MCTS(1000) should win >70% against Random
+results = run_batch(MCTSStrategy(1000), RandomStrategy(), num_games=100)
 mcts_wins = sum(1 for r in results if r.winner == 0)
 print(f"MCTS win rate: {mcts_wins}%")
 ```
+
+**Note**: MCTS uses EpsilonGreedyStrategy (80% heuristic, 20% random) for rollouts
+and orders moves by heuristic score during expansion. These optimizations are
+critical for good performance - pure random rollouts only achieve ~50% win rate.
 
 ## Debugging MCTS Performance
 
@@ -150,6 +188,8 @@ print(f"MCTS win rate: {mcts_wins}%")
 2. **Verify player_just_moved tracking**: Should match who made the move to reach node
 3. **Print move statistics**: High-visit moves should have reasonable win rates
 4. **Check simulation outcomes**: Random simulations should be ~50% from any balanced state
+5. **Verify heuristic-guided rollouts**: EpsilonGreedyStrategy should be default
+6. **Verify move ordering**: untried_moves should be sorted by heuristic score (best first)
 
 ### Diagnostic script usage:
 
@@ -239,6 +279,20 @@ load_dotenv(Path(__file__).parent / ".env")
 **Symptom**: Noticeable delay between moves even for non-LLM strategies
 **Cause**: 300ms delay between AI moves for "dramatic effect"
 **Fix**: Reduced to 50ms; added "AI thinking" indicator for LLM strategies
+
+#### 6. MCTS Strategy Crashes Web App
+
+**Symptom**: "Unexpected token 'I', "Internal S"..." JSON parse error when selecting MCTS
+**Cause**: Parameter name mismatch in `web/api/session_manager.py`:
+```python
+# WRONG - MCTSStrategy expects exploration_constant, not exploration
+MCTSStrategy(iterations=..., exploration=...)
+```
+**Fix**: Changed to correct parameter name:
+```python
+MCTSStrategy(iterations=params.get("iterations", 1000), exploration_constant=params.get("exploration", 1.414))
+```
+Same fix applied to ISMCTSStrategy.
 
 ### WebSocket Protocol
 

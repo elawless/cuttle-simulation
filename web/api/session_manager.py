@@ -521,15 +521,15 @@ class StrategyFactory:
             case "mcts":
                 from strategies.mcts import MCTSStrategy
                 return MCTSStrategy(
-                    iterations=params.get("iterations", 500),
-                    exploration=params.get("exploration", 1.414),
+                    iterations=params.get("iterations", 1000),
+                    exploration_constant=params.get("exploration", 1.414),
                 )
 
             case "ismcts":
                 from strategies.ismcts import ISMCTSStrategy
                 return ISMCTSStrategy(
-                    iterations=params.get("iterations", 500),
-                    exploration=params.get("exploration", 0.7),
+                    iterations=params.get("iterations", 1000),
+                    exploration_constant=params.get("exploration", 0.7),
                 )
 
             case s if s.startswith("llm-"):
