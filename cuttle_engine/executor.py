@@ -524,13 +524,14 @@ def _resolve_six(state: GameState) -> GameState:
 
 
 def _resolve_seven(state: GameState, caster: int) -> GameState:
-    """Seven: Reveal top card(s) and play one immediately."""
+    """Seven: Reveal top 2 cards and play one immediately."""
     if len(state.deck) == 0:
         raise IllegalMoveError("Deck is empty")
 
-    # Reveal top 1 card (some variants reveal 2, but cuttle.cards reveals 1)
-    revealed = (state.deck[0],)
-    new_deck = state.deck[1:]
+    # Reveal top 2 cards (or 1 if only 1 remains)
+    num_reveal = min(2, len(state.deck))
+    revealed = tuple(state.deck[:num_reveal])
+    new_deck = state.deck[num_reveal:]
 
     seven_state = SevenState(revealed_cards=revealed, player=caster)
     return (

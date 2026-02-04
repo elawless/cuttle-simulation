@@ -7,8 +7,9 @@ A Python simulation of the card game Cuttle, with multiple AI strategies includi
 ## Architecture
 
 - `cuttle_engine/` - Core game logic (immutable states, move generation, execution)
-- `strategies/` - AI strategies (RandomStrategy, HeuristicStrategy, MCTSStrategy)
+- `strategies/` - AI strategies (RandomStrategy, HeuristicStrategy, MCTSStrategy, LLMStrategy)
 - `simulation/` - Game runner and tournament infrastructure
+- `web/` - Web UI (FastAPI backend + SvelteKit frontend)
 - `tests/` - 103 passing tests covering engine behavior
 
 ## Known Edge Cases & Gotchas
@@ -164,3 +165,111 @@ This prints each move with MCTS statistics to identify poor move selection.
 - For rapid testing, use MCTS(100-200)
 - RandomStrategy is very fast (~1ms per game)
 - Tournament of 100 games: Random ~100ms, MCTS(500) ~5-10 minutes
+
+## Web UI
+
+### Running the Web UI
+
+```bash
+# Terminal 1: Start backend (loads .env automatically)
+python run_server.py
+
+# Terminal 2: Start frontend
+cd web/frontend && npm run dev
+```
+
+Access at http://localhost:5173
+
+### Architecture
+
+- **Backend**: FastAPI with WebSocket support (`web/api/`)
+- **Frontend**: SvelteKit + TypeScript (`web/frontend/`)
+- **Real-time**: WebSocket for live game updates, REST fallback
+- **Session management**: In-memory game sessions with AI turn automation
+
+### LLM Strategy
+
+The `LLMStrategy` class (`strategies/llm_strategy.py`) uses Claude models for move selection:
+
+```python
+from strategies.llm_strategy import LLMStrategy
+
+# Available models: "haiku", "sonnet", "opus"
+strategy = LLMStrategy(model="haiku", temperature=0.3)
+```
+
+**Requirements**:
+- Set `ANTHROPIC_API_KEY` in `.env` file or environment
+- Install anthropic package: `pip install anthropic`
+
+**LLMThinking capture**: The strategy captures reasoning in `last_thinking` property for debugging and UI display.
+
+### Web UI Bugs & Fixes
+
+#### 1. ANTHROPIC_API_KEY Not Loading
+
+**Symptom**: `Could not resolve authentication method` error in WebSocket
+**Cause**: Server wasn't reading `.env` file when started via uvicorn
+**Fix**: Added explicit dotenv loading in `run_server.py`:
+```python
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).parent / ".env")
+```
+
+#### 2. LLM Selecting Wrong Moves (Always Drawing)
+
+**Symptom**: LLM would analyze correctly but then just draw a card
+**Cause**: `max_tokens=512` was too low, response got cut off before `MOVE: X`
+**Fix**: Increased to `max_tokens=1024` and added multiple regex patterns for move parsing
+
+#### 3. Seven Card Only Revealing 1 Card
+
+**Symptom**: Playing a Seven only showed 1 card instead of 2
+**Cause**: Code had incorrect comment "some variants reveal 2, but cuttle.cards reveals 1"
+**Fix**: Changed `_resolve_seven` to reveal `min(2, len(deck))` cards (standard Cuttle rules)
+
+#### 4. Viewer Perspective Not Applied to Game Over
+
+**Symptom**: Win/loss message wrong when human plays as player 1
+**Cause**: Game over overlay hardcoded `winner === 0` as human win
+**Fix**: Use `viewer` variable: `winner === viewer ? 'You Won!' : 'AI Won'`
+
+#### 5. Game Felt Laggy
+
+**Symptom**: Noticeable delay between moves even for non-LLM strategies
+**Cause**: 300ms delay between AI moves for "dramatic effect"
+**Fix**: Reduced to 50ms; added "AI thinking" indicator for LLM strategies
+
+### WebSocket Protocol
+
+**Server → Client messages**:
+- `game_state`: Full state update with legal moves
+- `move_made`: Move was executed (includes move details)
+- `ai_thinking`: AI is computing (shows strategy name)
+- `legal_moves`: Updated move list
+- `error`: Error message
+
+**Client → Server messages**:
+- `select_move`: `{ type: "select_move", move_index: number }`
+
+### Frontend State Management
+
+Key Svelte stores in `gameStore.ts`:
+- `gameState`: Current game state from server
+- `legalMoves`: Available moves for human player
+- `isHumanTurn`: Whether human can act
+- `aiThinking`: Shows which AI strategy is computing
+- `moveHistory`: Log of all moves with optional LLM reasoning
+
+### Viewer Perspective Pattern
+
+When human can be either player 0 or 1, use viewer-relative indexing:
+
+```svelte
+$: viewer = parseInt($page.url.searchParams.get('viewer') || '0', 10);
+$: opponent = 1 - viewer;
+$: myState = state?.players[viewer];
+$: oppState = state?.players[opponent];
+```
+
+This ensures "You" and "Opponent" labels are always correct regardless of which side the human plays.
