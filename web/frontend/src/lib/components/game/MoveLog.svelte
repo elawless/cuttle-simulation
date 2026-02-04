@@ -3,12 +3,13 @@
 
 	export let moves: MoveRecord[] = [];
 	export let expanded: boolean = true;
+	export let viewer: number = 0;
 
 	let selectedMove: MoveRecord | null = null;
 	let logContentEl: HTMLDivElement;
 
 	function getPlayerLabel(player: number): string {
-		return player === 0 ? 'You' : 'AI';
+		return player === viewer ? 'You' : 'AI';
 	}
 
 	function getMoveIcon(moveType: string): string {
@@ -59,7 +60,7 @@
 					<button
 						class="log-entry"
 						class:selected={selectedMove === move}
-						class:ai={move.player === 1}
+						class:ai={move.player !== viewer}
 						class:has-details={move.llm_thinking || move.hands_after}
 						on:click={() => toggleMove(move)}
 					>
@@ -81,11 +82,11 @@
 								<div class="hands-section">
 									<div class="hands-row">
 										<span class="hand-label">Your hand:</span>
-										<span class="hand-cards">{move.hands_after?.[0]?.join(', ') || 'empty'}</span>
+										<span class="hand-cards">{move.hands_after?.[viewer]?.join(', ') || 'empty'}</span>
 									</div>
 									<div class="hands-row">
 										<span class="hand-label">AI hand:</span>
-										<span class="hand-cards">{move.hands_after?.[1]?.length || 0} cards</span>
+										<span class="hand-cards">{move.hands_after?.[1 - viewer]?.length || 0} cards</span>
 									</div>
 								</div>
 							{/if}
@@ -124,8 +125,7 @@
 
 <style>
 	.move-log {
-		background: rgba(0, 0, 0, 0.3);
-		border-radius: 8px;
+		background: transparent;
 		display: flex;
 		flex-direction: column;
 		height: 100%;
@@ -136,22 +136,23 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		padding: 8px 12px;
-		background: rgba(255, 255, 255, 0.05);
+		padding: 12px 16px;
+		background: rgba(0, 0, 0, 0.2);
 		border: none;
 		cursor: pointer;
 		color: white;
 		text-align: left;
 		width: 100%;
 		flex-shrink: 0;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 	}
 
 	.header:hover {
-		background: rgba(255, 255, 255, 0.08);
+		background: rgba(0, 0, 0, 0.3);
 	}
 
 	.title {
-		font-size: 12px;
+		font-size: 11px;
 		font-weight: 600;
 		color: #94a3b8;
 		text-transform: uppercase;
@@ -176,7 +177,7 @@
 		flex: 1;
 		overflow-y: auto;
 		overflow-x: hidden;
-		padding: 4px;
+		padding: 8px;
 	}
 
 	.empty {

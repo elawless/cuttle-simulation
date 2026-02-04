@@ -503,6 +503,32 @@ MCTSStrategy(iterations=params.get("iterations", 1000), exploration_constant=par
 ```
 Same fix applied to ISMCTSStrategy.
 
+#### 7. Targeted Moves Not Playable From Hand (Jack, Scuttle)
+
+**Symptom**: Jack in hand couldn't be clicked to steal opponent's point cards
+**Cause**: `getHandCardMoves()` filtered out moves with targets (`!m.target`)
+```javascript
+// WRONG - filters out Jack steals, scuttles, etc.
+return moves.filter(m => m.card?.rank === card.rank && m.card?.suit === card.suit && !m.target);
+```
+**Fix**: Remove the `!m.target` filter to include all moves for the card:
+```javascript
+return moves.filter(m => m.card?.rank === card.rank && m.card?.suit === card.suit);
+```
+
+#### 8. CardActionModal Not Showing Target Details
+
+**Symptom**: Playing a 3 showed multiple "One-Off: Revive a card" options with no indication of WHICH card would be revived
+**Cause**: Modal only showed generic descriptions, not target-specific info
+**Fix**: Check for `move.target` and display target card details:
+```javascript
+// 3 one-off (revive)
+if (card.rank === 3 && move.type === 'PLAY_ONE_OFF' && move.target) {
+    return `Revive ${move.target.rank_symbol}${move.target.suit_symbol}`;
+}
+```
+Same pattern for: 2 (destroy permanent), 9 (return to hand), Jack (steal), Scuttle
+
 ### WebSocket Protocol
 
 **Server → Client messages**:
