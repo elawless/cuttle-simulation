@@ -250,6 +250,103 @@ python scripts/debug_mcts.py --games 5 --iterations 500 --verbose
 
 This prints each move with MCTS statistics to identify poor move selection.
 
+## Optimal Cuttle Strategy (MCTS-Learned)
+
+Based on analysis of 1000+ MCTS games achieving 94.9% win rate, these are the
+optimal play patterns for Cuttle:
+
+### Core Philosophy
+
+**Cuttle is a RACING game, not a control game.** Get to 21 points first.
+Don't try to control the board - just outpace your opponent.
+
+### Card Usage Guidelines
+
+| Card | Optimal Use | Notes |
+|------|-------------|-------|
+| **10, 9** | Always points | Never scuttle with these (99% points) |
+| **8** | Almost always points | Glasses is a trap (93% points vs 5% glasses) |
+| **7** | Points or one-off | Use deck play 27% of the time |
+| **6** | Usually points | 78% points, only scrap perms if they have many |
+| **5** | Points | 93% points, scuttle is rarely worth it |
+| **4** | Context-dependent | Points 46%, discard 52% |
+| **3** | Revive or points | **Revive 49%** if high-value card in scrap |
+| **2** | Points > destroy | 52% points, only destroy key permanents |
+| **A** | One-off when behind | Only use when opponent has more points |
+| **K** | Always play | Threshold reduction is critical |
+| **Q** | Low priority | Protection < offense (only 3.2% of plays) |
+| **J** | Steal high-value | Especially when behind (13% when losing big) |
+
+### By Game Phase
+
+**OPENING (Turns 1-3):**
+- Play points aggressively (53.5% of moves)
+- Draw if no good point card (14.3%)
+- Kings are good early (7.7%)
+- Avoid: Scuttling (0.9%), Queens (4.4%), 8 as Glasses (0.9%)
+
+**MIDGAME (Turns 4-8):**
+- Draw more (34.7%) - card advantage matters
+- Points still primary (33%)
+- Use Jacks to steal (6.7%)
+- Avoid: Scuttling (2.8%)
+
+**LATEGAME (Turn 9+):**
+- Close out with points (35.8%)
+- Keep drawing to find lethal (41.3%)
+- Kings to lower threshold (7.6%)
+
+### By Board State
+
+**When BEHIND 8+ points:**
+- Use Ace one-off to reset (11.1%)
+- Jacks to steal high-value cards (13.3%)
+- Still play points (27.8%)
+- Avoid: Scuttling (5.2%), Queens (3.3%)
+
+**When BEHIND 3-7 points:**
+- Play points to catch up (36.5%)
+- Draw for options (29.6%)
+- DON'T scuttle (4.6% vs 23% for old heuristic)
+
+**When EVEN:**
+- Points (43.6%) + Draw (29.6%)
+- DON'T use 8 as Glasses (0.5% vs 8.1%)
+
+**When AHEAD:**
+- Play Kings to close out (+10% when ahead 3-7)
+- Keep playing points (50.3% when ahead 8+)
+- Never scuttle (0.4%)
+
+### Counter Decisions
+
+**Only counter 19% of the time!** Most one-offs aren't worth spending a card.
+
+| Threat | Counter Rate | Reasoning |
+|--------|-------------|-----------|
+| **Ace** | 36% | Scrap all points is devastating |
+| **Five** | 50% | Don't let them draw two |
+| Four | 15% | Discard hurts but keep your counter |
+| Two | 14% | Losing a permanent isn't worth a card |
+| Six | 0% | Let them waste it |
+| Three | 0% | Who cares if they revive |
+| Seven | 0% | They play from deck? Fine |
+
+### Key Strategic Insights
+
+1. **8s for points is MASSIVE** - 92% difference vs old heuristic
+2. **Never scuttle** - 1-for-1 trades don't advance win condition
+3. **Threes should revive** - 49% revive rate for high-value recovery
+4. **Sevens as one-off** - Deck play gives tempo advantage
+5. **Ignore opponent threats** - Racing beats reacting
+6. **Queens are overrated** - Only 3.2% of plays
+
+### Win Rate Results
+
+- MCTS vs Random: **99-100%**
+- MCTS vs Old Heuristic: **94.9%**
+- Updated Heuristic should perform close to MCTS
+
 ## Performance Notes
 
 - MCTS(1000) takes ~2-5 seconds per move (depends on game complexity)
