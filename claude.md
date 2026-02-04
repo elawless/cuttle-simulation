@@ -369,14 +369,38 @@ Based on 300-game analysis, MCTS uses one-offs very strategically:
 | Three | 0% | Who cares if they revive |
 | Seven | 0% | They play from deck? Fine |
 
+### THREE Revival Targeting (MCTS-Learned)
+
+Analysis of 47 THREE revives across 500 games shows clear priorities:
+
+| Card Revived | Percentage | Why |
+|--------------|------------|-----|
+| **Jack** | 27.7% | Steal opponent's high-value points |
+| **10** | 23.4% | Maximum point value |
+| **King** | 17.0% | Threshold reduction |
+| **9** | 12.8% | High points |
+| **8** | 8.5% | Good points |
+| **7** | 6.4% | Medium points |
+| **4, 5, 6** | 4.3% | Low priority |
+
+**Never revived (0%):** 2, 3, Queen
+
+**Priority order:** Jack > 10 > King > 9 > 8 > 7
+
+**Why Jack is #1:** When behind, stealing a 10 from opponent is a 20-point swing.
+When even/ahead, Jack recovers both point-stealing ability and board presence.
+
+**Why Queen is never revived:** Protection doesn't win games. Points do.
+
 ### Key Strategic Insights
 
 1. **8s for points is MASSIVE** - 92% difference vs old heuristic
 2. **Never scuttle** - 1-for-1 trades don't advance win condition
 3. **Threes should revive** - 49% revive rate for high-value recovery
-4. **Sevens as one-off** - Deck play gives tempo advantage
-5. **Ignore opponent threats** - Racing beats reacting
-6. **Queens are overrated** - Only 3.2% of plays
+4. **THREE targets: Jack > 10 > King** - Never revive 2, 3, or Queen
+5. **Sevens as one-off** - Deck play gives tempo advantage
+6. **Ignore opponent threats** - Racing beats reacting
+7. **Queens are overrated** - Only 3.2% of plays
 
 ### Win Rate Results
 

@@ -188,18 +188,29 @@ class HeuristicStrategy(Strategy):
 
                 elif effect == OneOffEffect.THREE_REVIVE:
                     # MCTS revives 36% when behind 8+, 28% even
-                    # Check if there's a high-value card in scrap
-                    high_value_in_scrap = any(
-                        c.point_value >= 8 or c.rank in (Rank.KING, Rank.JACK)
-                        for c in state.scrap
-                    )
-                    if high_value_in_scrap:
+                    # Priority: Jack > 10 > King > 9 > 8 > 7
+                    # NEVER revive: 2, 3, Queen (0% in 500 games)
+                    best_revive_score = 0
+                    for c in state.scrap:
+                        if c.rank == Rank.JACK:
+                            best_revive_score = max(best_revive_score, 600)  # 27.7% of revives
+                        elif c.rank == Rank.TEN:
+                            best_revive_score = max(best_revive_score, 550)  # 23.4% of revives
+                        elif c.rank == Rank.KING:
+                            best_revive_score = max(best_revive_score, 500)  # 17% of revives
+                        elif c.point_value >= 8:  # 9, 8
+                            best_revive_score = max(best_revive_score, 400 + c.point_value * 10)
+                        elif c.point_value >= 7:
+                            best_revive_score = max(best_revive_score, 300)
+                        # Skip 2, 3, 4, 5, 6 for points and Queen - MCTS never revives these
+
+                    if best_revive_score > 0:
                         if is_behind_big:
-                            return 500  # Recover value when behind
+                            return best_revive_score + 100  # Bonus when behind
                         elif is_behind or point_diff == 0:
-                            return 400
-                        return 200  # Lower priority when ahead
-                    return 80
+                            return best_revive_score
+                        return best_revive_score - 100  # Lower priority when ahead
+                    return 50  # No good targets in scrap
 
                 elif effect == OneOffEffect.FOUR_DISCARD:
                     # MCTS uses Four 81% in opening - tempo play!
