@@ -113,6 +113,13 @@ while node is not None:
 In code, this is now handled by a `_backpropagate(...)` helper that only flips
 when `parent.player_just_moved != node.player_just_moved`.
 
+**Bug we hit**: We were flipping on *every* tree level, even when the same
+player takes consecutive actions (Seven resolution, Four discard). That
+systematically mis-attributed wins/losses and blunted the signal.
+
+**Fix**: Flip only when the acting player actually changes between parent/child.
+This preserves correct perspective during multi-action phases.
+
 ### Error 4: MCTS ~50% Win Rate (Should Be >70%)
 
 **Symptom**: MCTS performs no better than random (~50% win rate vs Random)
@@ -155,6 +162,32 @@ because UCB1 still returns `inf` for children whose parent (root) has `visits = 
 **Fix**: Backpropagation must increment visits for *all* nodes, including the root.
 This ensures UCB1 for depth-1 children becomes finite and selection meaningfully
 balances exploration/exploitation.
+
+**Bug we hit**: `root.visits` stayed at 0 because we only updated nodes with
+`player_just_moved != None`. After full expansion, UCB1 for every depth-1 child
+stayed `inf` (parent visits = 0), so selection collapsed to the first child in
+iteration order.
+
+**Fix**: Always increment visits on every node during backprop. Wins should still
+only be attributed to nodes that correspond to an actual move.
+
+### MCTS Bug Summary (2026-02)
+
+**Observed symptom**: MCTS(1000) ~50% win rate vs Random, no scaling with iterations.
+
+**Root causes**:
+1. **Incorrect perspective flip** during backprop when the same player acts twice.
+2. **Root visits never incremented**, leaving UCB1 scores infinite at depth 1.
+
+**Fixes applied**:
+1. Added `_backpropagate(...)` to:
+   - Always increment `visits` for every node (including root).
+   - Flip result only when `player_just_moved` changes between parent/child.
+2. Switched both `select_move` and `select_move_with_stats` to use this helper.
+
+**Why it mattered**:
+- The flip bug injected systematic noise into win attribution.
+- The root visit bug effectively disabled UCB1 selection once the root was fully expanded.
 
 ## Testing Guidelines
 
