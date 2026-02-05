@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import math
+import os
 import random
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -176,6 +178,9 @@ class MCTSStrategy(Strategy):
     This is an "open information" version - it assumes perfect information
     about the game state. For hidden information (opponent's hand),
     use ISMCTSStrategy instead.
+
+    Supports root parallelization via num_workers parameter: runs N independent
+    MCTS trees in parallel and aggregates their votes for move selection.
     """
 
     def __init__(
@@ -185,6 +190,7 @@ class MCTSStrategy(Strategy):
         simulation_strategy: Strategy | None = None,
         seed: int | None = None,
         max_simulation_depth: int = 200,
+        num_workers: int = 1,
     ):
         """Initialize the MCTS strategy.
 
@@ -194,6 +200,8 @@ class MCTSStrategy(Strategy):
             simulation_strategy: Strategy for rollouts (EpsilonGreedyStrategy if None).
             seed: Random seed for reproducibility.
             max_simulation_depth: Maximum moves in a simulation before giving up.
+            num_workers: Number of parallel workers (1 = serial, >1 = parallel).
+                         When parallel, each worker runs iterations/num_workers iterations.
         """
         self._iterations = iterations
         self._exploration = exploration_constant
@@ -202,6 +210,8 @@ class MCTSStrategy(Strategy):
         )
         self._rng = random.Random(seed)
         self._max_sim_depth = max_simulation_depth
+        self._num_workers = num_workers
+        self._seed = seed
 
     @property
     def name(self) -> str:
@@ -223,6 +233,14 @@ class MCTSStrategy(Strategy):
         if len(legal_moves) == 1:
             return legal_moves[0]
 
+        # Use parallel execution if num_workers > 1
+        if self._num_workers > 1:
+            return self._select_move_parallel(state, legal_moves)
+
+        return self._select_move_serial(state, legal_moves)
+
+    def _select_move_serial(self, state: GameState, legal_moves: list[Move]) -> Move:
+        """Run MCTS serially and return best move."""
         # Create root node
         root = MCTSNode(state=state)
 
@@ -264,6 +282,66 @@ class MCTSStrategy(Strategy):
         )[0]
 
         return best_move
+
+    def _select_move_parallel(self, state: GameState, legal_moves: list[Move]) -> Move:
+        """Run MCTS in parallel using root parallelization.
+
+        Runs N independent MCTS trees in parallel, then aggregates their
+        vote counts to select the best move. Each worker runs iterations/N
+        iterations.
+        """
+        iterations_per_worker = max(1, self._iterations // self._num_workers)
+
+        # Submit work to process pool
+        with ProcessPoolExecutor(max_workers=self._num_workers) as pool:
+            futures = [
+                pool.submit(
+                    _run_mcts_worker,
+                    state,
+                    legal_moves,
+                    iterations_per_worker,
+                    self._exploration,
+                    self._max_sim_depth,
+                    (self._seed + i) if self._seed is not None else None,
+                )
+                for i in range(self._num_workers)
+            ]
+            results = [f.result() for f in as_completed(futures)]
+
+        # Aggregate results: sum visit counts across all workers
+        return self._aggregate_parallel_results(results, legal_moves)
+
+    def _aggregate_parallel_results(
+        self, results: list[dict[str, int]], legal_moves: list[Move]
+    ) -> Move:
+        """Aggregate vote counts from parallel MCTS runs.
+
+        Args:
+            results: List of {move_str: visit_count} dicts from workers.
+            legal_moves: Original legal moves list.
+
+        Returns:
+            Move with highest total visit count across all workers.
+        """
+        # Sum visit counts by move string representation
+        aggregated: dict[str, int] = {}
+        for result in results:
+            for move_str, visits in result.items():
+                aggregated[move_str] = aggregated.get(move_str, 0) + visits
+
+        if not aggregated:
+            return self._rng.choice(legal_moves)
+
+        # Find move string with highest total visits
+        best_move_str = max(aggregated.keys(), key=lambda k: aggregated[k])
+
+        # Map back to actual Move object
+        for move in legal_moves:
+            if str(move) == best_move_str:
+                return move
+
+        # Fallback if string matching fails
+        return self._rng.choice(legal_moves)
 
     def _get_acting_player(self, state: GameState) -> int:
         """Determine which player is acting in the given state."""
@@ -445,3 +523,130 @@ class MCTSStrategy(Strategy):
 
         _, stats = self.select_move_with_stats(state, legal_moves)
         return stats
+
+
+# ============================================================================
+# Standalone worker function for parallel MCTS (must be at module level)
+# ============================================================================
+
+
+def _run_mcts_worker(
+    state: GameState,
+    legal_moves: list[Move],
+    iterations: int,
+    exploration: float,
+    max_sim_depth: int,
+    seed: int | None,
+) -> dict[str, int]:
+    """Run MCTS iterations and return visit counts.
+
+    This is a standalone function (not a method) so it can be pickled
+    and executed in a separate process.
+
+    Args:
+        state: Game state to search from.
+        legal_moves: Legal moves at this state.
+        iterations: Number of MCTS iterations.
+        exploration: UCB1 exploration constant.
+        max_sim_depth: Maximum simulation depth.
+        seed: Random seed for this worker.
+
+    Returns:
+        Dict mapping move string representations to visit counts.
+    """
+    rng = random.Random(seed)
+    simulation_strategy = EpsilonGreedyStrategy(epsilon=0.2, seed=seed)
+
+    # Create root node
+    root = MCTSNode(state=state)
+
+    def get_acting_player(s: GameState) -> int:
+        if s.phase == GamePhase.COUNTER:
+            return s.counter_state.waiting_for_player
+        elif s.phase == GamePhase.DISCARD_FOUR:
+            return s.four_state.player
+        elif s.phase == GamePhase.RESOLVE_SEVEN:
+            return s.seven_state.player
+        return s.current_player
+
+    def simulate(s: GameState, perspective_player: int | None) -> float | None:
+        from cuttle_engine.executor import IllegalMoveError
+
+        current_state = s
+        depth = 0
+
+        while not current_state.is_game_over and depth < max_sim_depth:
+            moves = generate_legal_moves(current_state)
+            if not moves:
+                break
+            move = simulation_strategy.select_move(current_state, moves)
+            try:
+                current_state = execute_move(current_state, move)
+            except IllegalMoveError:
+                break
+            depth += 1
+
+        if not current_state.is_game_over:
+            if perspective_player is None:
+                return 0.5
+            my_pts = current_state.players[perspective_player].point_total
+            opp_pts = current_state.players[1 - perspective_player].point_total
+            if my_pts > opp_pts:
+                return 0.7
+            elif opp_pts > my_pts:
+                return 0.3
+            return 0.5
+
+        if perspective_player is None:
+            return 0.5
+        if current_state.winner == perspective_player:
+            return 1.0
+        elif current_state.winner is not None:
+            return 0.0
+        return 0.5
+
+    def backpropagate(node: MCTSNode, result: float | None) -> None:
+        current_result = 0.5 if result is None else result
+        can_flip = result is not None
+        while node is not None:
+            node.visits += 1
+            if node.player_just_moved is not None:
+                node.wins += current_result
+                if can_flip:
+                    parent = node.parent
+                    if (
+                        parent is not None
+                        and parent.player_just_moved is not None
+                        and parent.player_just_moved != node.player_just_moved
+                    ):
+                        current_result = 1.0 - current_result
+            node = node.parent
+
+    # Run MCTS iterations
+    for _ in range(iterations):
+        node = root
+
+        # Selection
+        while not node.is_terminal and node.is_fully_expanded and node.children:
+            node = node.best_child(exploration)
+
+        # Expansion
+        expanded = False
+        while not node.is_terminal and node.untried_moves and not expanded:
+            move = node.untried_moves[0]
+            try:
+                new_state = execute_move(node.state, move)
+                player_just_moved = get_acting_player(node.state)
+                node = node.add_child(move, new_state, player_just_moved)
+                expanded = True
+            except Exception:
+                node.untried_moves.remove(move)
+
+        # Simulation
+        result = simulate(node.state, node.player_just_moved)
+
+        # Backpropagation
+        backpropagate(node, result)
+
+    # Return visit counts as {move_str: visits}
+    return {str(move): child.visits for move, child in root.children.items()}

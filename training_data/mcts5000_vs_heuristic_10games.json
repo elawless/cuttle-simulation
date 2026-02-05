@@ -1,0 +1,2178 @@
+{
+  "metadata": {
+    "num_games": 10,
+    "timestamp": "2026-02-04T13:58:54.285599",
+    "total_moves": 58
+  },
+  "games": [
+    {
+      "game_id": "e4ca54d8-a07a-4e88-b48e-0b0b4110a8fe",
+      "timestamp": "2026-02-04T13:58:54.285342",
+      "seed": 5,
+      "mcts_player": 0,
+      "mcts_iterations": 5000,
+      "opponent_strategy": "heuristic",
+      "winner": 0,
+      "final_scores": [
+        16,
+        10
+      ],
+      "mcts_won": true,
+      "mcts_result": 1.0,
+      "moves": [
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f299492078f3",
+          "legal_moves": [
+            "Play 10\u2663 for points",
+            "Play K\u2665 to reduce win threshold",
+            "Play 6\u2666 for points",
+            "Play 5\u2660 for points",
+            "Play 5\u2660 as one-off (draw two)",
+            "Draw",
+            "Play Q\u2663 for protection"
+          ],
+          "visit_counts": {
+            "Play 10\u2663 for points": 158,
+            "Play K\u2665 to reduce win threshold": 2302,
+            "Play 6\u2666 for points": 204,
+            "Play 5\u2660 for points": 217,
+            "Play 5\u2660 as one-off (draw two)": 296,
+            "Draw": 771,
+            "Play Q\u2663 for protection": 1052
+          },
+          "win_rates": {
+            "Play 10\u2663 for points": 0.189873417721519,
+            "Play K\u2665 to reduce win threshold": 0.43397046046915727,
+            "Play 6\u2666 for points": 0.23039215686274508,
+            "Play 5\u2660 for points": 0.23963133640552994,
+            "Play 5\u2660 as one-off (draw two)": 0.28040540540540543,
+            "Draw": 0.37094682230869,
+            "Play Q\u2663 for protection": 0.3925855513307985
+          },
+          "selected_move": "Play K\u2665 to reduce win threshold",
+          "selected_visits": 2302,
+          "selected_win_rate": 0.43397046046915727,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "45f35df771b6",
+          "legal_moves": [
+            "Play 10\u2663 for points",
+            "Play 6\u2666 for points",
+            "Play 5\u2660 for points",
+            "Play 5\u2660 as one-off (draw two)",
+            "Draw",
+            "Play Q\u2663 for protection",
+            "Play 6\u2666 as one-off (scrap all permanents)"
+          ],
+          "visit_counts": {
+            "Play 10\u2663 for points": 123,
+            "Play 6\u2666 for points": 192,
+            "Play 5\u2660 for points": 192,
+            "Play 5\u2660 as one-off (draw two)": 299,
+            "Draw": 410,
+            "Play Q\u2663 for protection": 3721,
+            "Play 6\u2666 as one-off (scrap all permanents)": 63
+          },
+          "win_rates": {
+            "Play 10\u2663 for points": 0.21951219512195122,
+            "Play 6\u2666 for points": 0.2916666666666667,
+            "Play 5\u2660 for points": 0.2916666666666667,
+            "Play 5\u2660 as one-off (draw two)": 0.34782608695652173,
+            "Draw": 0.3804878048780488,
+            "Play Q\u2663 for protection": 0.6433754367105616,
+            "Play 6\u2666 as one-off (scrap all permanents)": 0.07936507936507936
+          },
+          "selected_move": "Play Q\u2663 for protection",
+          "selected_visits": 3721,
+          "selected_win_rate": 0.6433754367105616,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "a78fd163a687",
+          "legal_moves": [
+            "Play 10\u2663 for points",
+            "Play 6\u2666 for points",
+            "Play 5\u2660 for points",
+            "Play 5\u2660 as one-off (draw two)",
+            "Draw",
+            "Play 6\u2666 as one-off (scrap all permanents)"
+          ],
+          "visit_counts": {
+            "Play 10\u2663 for points": 3291,
+            "Play 6\u2666 for points": 967,
+            "Play 5\u2660 for points": 639,
+            "Play 5\u2660 as one-off (draw two)": 31,
+            "Draw": 51,
+            "Play 6\u2666 as one-off (scrap all permanents)": 21
+          },
+          "win_rates": {
+            "Play 10\u2663 for points": 0.9437860832573686,
+            "Play 6\u2666 for points": 0.8821096173733195,
+            "Play 5\u2660 for points": 0.8513302034428795,
+            "Play 5\u2660 as one-off (draw two)": 0.25806451612903225,
+            "Draw": 0.43137254901960786,
+            "Play 6\u2666 as one-off (scrap all permanents)": 0.09523809523809523
+          },
+          "selected_move": "Play 10\u2663 for points",
+          "selected_visits": 3291,
+          "selected_win_rate": 0.9437860832573686,
+          "game_result": 1.0
+        },
+        {
+          "turn": 4,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "d6fd0565575a",
+          "legal_moves": [
+            "Play 6\u2666 for points",
+            "Play 5\u2660 for points",
+            "Draw",
+            "Play 5\u2660 as one-off (draw two)",
+            "Play 6\u2666 as one-off (scrap all permanents)"
+          ],
+          "visit_counts": {
+            "Play 6\u2666 for points": 2460,
+            "Play 5\u2660 for points": 2460,
+            "Draw": 33,
+            "Play 5\u2660 as one-off (draw two)": 28,
+            "Play 6\u2666 as one-off (scrap all permanents)": 19
+          },
+          "win_rates": {
+            "Play 6\u2666 for points": 1.0,
+            "Play 5\u2660 for points": 1.0,
+            "Draw": 0.36363636363636365,
+            "Play 5\u2660 as one-off (draw two)": 0.2857142857142857,
+            "Play 6\u2666 as one-off (scrap all permanents)": 0.10526315789473684
+          },
+          "selected_move": "Play 6\u2666 for points",
+          "selected_visits": 2460,
+          "selected_win_rate": 1.0,
+          "game_result": 1.0
+        }
+      ]
+    },
+    {
+      "game_id": "ebb504b0-9648-4fa4-a986-fea0c60e497b",
+      "timestamp": "2026-02-04T13:58:54.285379",
+      "seed": 1,
+      "mcts_player": 0,
+      "mcts_iterations": 5000,
+      "opponent_strategy": "heuristic",
+      "winner": 0,
+      "final_scores": [
+        30,
+        0
+      ],
+      "mcts_won": true,
+      "mcts_result": 1.0,
+      "moves": [
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f299492078f3",
+          "legal_moves": [
+            "Play 10\u2663 for points",
+            "Play 10\u2666 for points",
+            "Draw",
+            "Play 3\u2663 for points",
+            "Play Q\u2665 for protection"
+          ],
+          "visit_counts": {
+            "Play 10\u2663 for points": 2137,
+            "Play 10\u2666 for points": 1783,
+            "Draw": 110,
+            "Play 3\u2663 for points": 921,
+            "Play Q\u2665 for protection": 49
+          },
+          "win_rates": {
+            "Play 10\u2663 for points": 0.7459054749649041,
+            "Play 10\u2666 for points": 0.7386427369601795,
+            "Draw": 0.43636363636363634,
+            "Play 3\u2663 for points": 0.6992399565689468,
+            "Play Q\u2665 for protection": 0.24489795918367346
+          },
+          "selected_move": "Play 10\u2663 for points",
+          "selected_visits": 2137,
+          "selected_win_rate": 0.7459054749649041,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "45f35df771b6",
+          "legal_moves": [
+            "Play 10\u2666 for points",
+            "Play J\u2660 to steal 10\u2665",
+            "Draw",
+            "Play 3\u2663 for points",
+            "Play Q\u2665 for protection"
+          ],
+          "visit_counts": {
+            "Play 10\u2666 for points": 846,
+            "Play J\u2660 to steal 10\u2665": 3754,
+            "Draw": 46,
+            "Play 3\u2663 for points": 307,
+            "Play Q\u2665 for protection": 47
+          },
+          "win_rates": {
+            "Play 10\u2666 for points": 0.9113475177304965,
+            "Play J\u2660 to steal 10\u2665": 0.9858018114011721,
+            "Draw": 0.43478260869565216,
+            "Play 3\u2663 for points": 0.8175895765472313,
+            "Play Q\u2665 for protection": 0.44680851063829785
+          },
+          "selected_move": "Play J\u2660 to steal 10\u2665",
+          "selected_visits": 3754,
+          "selected_win_rate": 0.9858018114011721,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "a78fd163a687",
+          "legal_moves": [
+            "Play 10\u2666 for points",
+            "Play 3\u2663 for points",
+            "Draw",
+            "Play Q\u2665 for protection"
+          ],
+          "visit_counts": {
+            "Play 10\u2666 for points": 1392,
+            "Play 3\u2663 for points": 1391,
+            "Draw": 1073,
+            "Play Q\u2665 for protection": 1144
+          },
+          "win_rates": {
+            "Play 10\u2666 for points": 1.0,
+            "Play 3\u2663 for points": 1.0,
+            "Draw": 0.9846225535880708,
+            "Play Q\u2665 for protection": 0.9886363636363636
+          },
+          "selected_move": "Play 10\u2666 for points",
+          "selected_visits": 1392,
+          "selected_win_rate": 1.0,
+          "game_result": 1.0
+        }
+      ]
+    },
+    {
+      "game_id": "758bc97f-387e-493c-be58-3ad0e05923ef",
+      "timestamp": "2026-02-04T13:58:54.285391",
+      "seed": 4,
+      "mcts_player": 0,
+      "mcts_iterations": 5000,
+      "opponent_strategy": "heuristic",
+      "winner": 0,
+      "final_scores": [
+        23,
+        8
+      ],
+      "mcts_won": true,
+      "mcts_result": 1.0,
+      "moves": [
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f299492078f3",
+          "legal_moves": [
+            "Play 10\u2666 for points",
+            "Play 9\u2666 for points",
+            "Play 4\u2666 as one-off (force discard)",
+            "Draw",
+            "Play 4\u2666 for points",
+            "Play A\u2660 for points",
+            "Play Q\u2665 for protection"
+          ],
+          "visit_counts": {
+            "Play 10\u2666 for points": 1605,
+            "Play 9\u2666 for points": 1849,
+            "Play 4\u2666 as one-off (force discard)": 78,
+            "Draw": 368,
+            "Play 4\u2666 for points": 441,
+            "Play A\u2660 for points": 525,
+            "Play Q\u2665 for protection": 134
+          },
+          "win_rates": {
+            "Play 10\u2666 for points": 0.7021806853582554,
+            "Play 9\u2666 for points": 0.709572742022715,
+            "Play 4\u2666 as one-off (force discard)": 0.3333333333333333,
+            "Draw": 0.5896739130434783,
+            "Play 4\u2666 for points": 0.6077097505668935,
+            "Play A\u2660 for points": 0.6247619047619047,
+            "Play Q\u2665 for protection": 0.44776119402985076
+          },
+          "selected_move": "Play 9\u2666 for points",
+          "selected_visits": 1849,
+          "selected_win_rate": 0.709572742022715,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "45f35df771b6",
+          "legal_moves": [
+            "Play 10\u2666 for points",
+            "Play 4\u2666 as one-off (force discard)",
+            "Draw",
+            "Play 4\u2666 for points",
+            "Play A\u2660 for points",
+            "Play Q\u2665 for protection",
+            "Scuttle 8\u2663 with 10\u2666",
+            "Play A\u2660 as one-off (scrap all points)"
+          ],
+          "visit_counts": {
+            "Play 10\u2666 for points": 4106,
+            "Play 4\u2666 as one-off (force discard)": 45,
+            "Draw": 92,
+            "Play 4\u2666 for points": 230,
+            "Play A\u2660 for points": 309,
+            "Play Q\u2665 for protection": 92,
+            "Scuttle 8\u2663 with 10\u2666": 79,
+            "Play A\u2660 as one-off (scrap all points)": 47
+          },
+          "win_rates": {
+            "Play 10\u2666 for points": 0.8636142230881637,
+            "Play 4\u2666 as one-off (force discard)": 0.3111111111111111,
+            "Draw": 0.4891304347826087,
+            "Play 4\u2666 for points": 0.6478260869565218,
+            "Play A\u2660 for points": 0.686084142394822,
+            "Play Q\u2665 for protection": 0.4891304347826087,
+            "Scuttle 8\u2663 with 10\u2666": 0.45569620253164556,
+            "Play A\u2660 as one-off (scrap all points)": 0.3191489361702128
+          },
+          "selected_move": "Play 10\u2666 for points",
+          "selected_visits": 4106,
+          "selected_win_rate": 0.8636142230881637,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "a78fd163a687",
+          "legal_moves": [
+            "Play 4\u2666 for points",
+            "Play 4\u2666 as one-off (force discard)",
+            "Draw",
+            "Play A\u2660 for points",
+            "Play Q\u2665 for protection",
+            "Play A\u2660 as one-off (scrap all points)"
+          ],
+          "visit_counts": {
+            "Play 4\u2666 for points": 4591,
+            "Play 4\u2666 as one-off (force discard)": 33,
+            "Draw": 67,
+            "Play A\u2660 for points": 221,
+            "Play Q\u2665 for protection": 65,
+            "Play A\u2660 as one-off (scrap all points)": 23
+          },
+          "win_rates": {
+            "Play 4\u2666 for points": 1.0,
+            "Play 4\u2666 as one-off (force discard)": 0.3333333333333333,
+            "Draw": 0.5522388059701493,
+            "Play A\u2660 for points": 0.7828054298642534,
+            "Play Q\u2665 for protection": 0.5384615384615384,
+            "Play A\u2660 as one-off (scrap all points)": 0.17391304347826086
+          },
+          "selected_move": "Play 4\u2666 for points",
+          "selected_visits": 4591,
+          "selected_win_rate": 1.0,
+          "game_result": 1.0
+        }
+      ]
+    },
+    {
+      "game_id": "4dd7ca22-5a26-45d2-a961-2c585f95daa4",
+      "timestamp": "2026-02-04T13:58:54.285399",
+      "seed": 0,
+      "mcts_player": 0,
+      "mcts_iterations": 5000,
+      "opponent_strategy": "heuristic",
+      "winner": 1,
+      "final_scores": [
+        6,
+        22
+      ],
+      "mcts_won": false,
+      "mcts_result": 0.0,
+      "moves": [
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f299492078f3",
+          "legal_moves": [
+            "Play K\u2663 to reduce win threshold",
+            "Play K\u2665 to reduce win threshold",
+            "Play 7\u2660 for points",
+            "Play 7\u2660 as one-off (play from deck)",
+            "Draw",
+            "Play 3\u2665 for points",
+            "Play 3\u2660 for points"
+          ],
+          "visit_counts": {
+            "Play K\u2663 to reduce win threshold": 785,
+            "Play K\u2665 to reduce win threshold": 799,
+            "Play 7\u2660 for points": 352,
+            "Play 7\u2660 as one-off (play from deck)": 164,
+            "Draw": 619,
+            "Play 3\u2665 for points": 1198,
+            "Play 3\u2660 for points": 1083
+          },
+          "win_rates": {
+            "Play K\u2663 to reduce win threshold": 0.36560509554140125,
+            "Play K\u2665 to reduce win threshold": 0.3667083854818523,
+            "Play 7\u2660 for points": 0.29261363636363635,
+            "Play 7\u2660 as one-off (play from deck)": 0.18902439024390244,
+            "Draw": 0.3473344103392569,
+            "Play 3\u2665 for points": 0.39398998330550916,
+            "Play 3\u2660 for points": 0.3878116343490305
+          },
+          "selected_move": "Play 3\u2665 for points",
+          "selected_visits": 1198,
+          "selected_win_rate": 0.39398998330550916,
+          "game_result": 0.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "45f35df771b6",
+          "legal_moves": [
+            "Play K\u2663 to reduce win threshold",
+            "Play K\u2665 to reduce win threshold",
+            "Play 7\u2660 for points",
+            "Play 7\u2660 as one-off (play from deck)",
+            "Draw",
+            "Play 3\u2660 for points"
+          ],
+          "visit_counts": {
+            "Play K\u2663 to reduce win threshold": 988,
+            "Play K\u2665 to reduce win threshold": 1034,
+            "Play 7\u2660 for points": 749,
+            "Play 7\u2660 as one-off (play from deck)": 472,
+            "Draw": 713,
+            "Play 3\u2660 for points": 1044
+          },
+          "win_rates": {
+            "Play K\u2663 to reduce win threshold": 0.21558704453441296,
+            "Play K\u2665 to reduce win threshold": 0.218568665377176,
+            "Play 7\u2660 for points": 0.19626168224299065,
+            "Play 7\u2660 as one-off (play from deck)": 0.15677966101694915,
+            "Draw": 0.19214586255259467,
+            "Play 3\u2660 for points": 0.2193486590038314
+          },
+          "selected_move": "Play 3\u2660 for points",
+          "selected_visits": 1044,
+          "selected_win_rate": 0.2193486590038314,
+          "game_result": 0.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "a78fd163a687",
+          "legal_moves": [
+            "Play K\u2663 to reduce win threshold",
+            "Play K\u2665 to reduce win threshold",
+            "Play 7\u2660 for points",
+            "Play 7\u2660 as one-off (play from deck)",
+            "Draw"
+          ],
+          "visit_counts": {
+            "Play K\u2663 to reduce win threshold": 1251,
+            "Play K\u2665 to reduce win threshold": 1194,
+            "Play 7\u2660 for points": 1040,
+            "Play 7\u2660 as one-off (play from deck)": 812,
+            "Draw": 703
+          },
+          "win_rates": {
+            "Play K\u2663 to reduce win threshold": 0.08792965627498002,
+            "Play K\u2665 to reduce win threshold": 0.08458961474036851,
+            "Play 7\u2660 for points": 0.07596153846153846,
+            "Play 7\u2660 as one-off (play from deck)": 0.059113300492610835,
+            "Draw": 0.04836415362731152
+          },
+          "selected_move": "Play K\u2663 to reduce win threshold",
+          "selected_visits": 1251,
+          "selected_win_rate": 0.08792965627498002,
+          "game_result": 0.0
+        }
+      ]
+    },
+    {
+      "game_id": "f27acd9c-ae96-46fc-a1a4-1fb97369bd02",
+      "timestamp": "2026-02-04T13:58:54.285408",
+      "seed": 9,
+      "mcts_player": 0,
+      "mcts_iterations": 5000,
+      "opponent_strategy": "heuristic",
+      "winner": 0,
+      "final_scores": [
+        24,
+        9
+      ],
+      "mcts_won": true,
+      "mcts_result": 1.0,
+      "moves": [
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f299492078f3",
+          "legal_moves": [
+            "Play 10\u2660 for points",
+            "Play 8\u2665 for points",
+            "Play 8\u2660 for points",
+            "Play 6\u2665 for points",
+            "Draw",
+            "Play 3\u2666 for points",
+            "Play 8\u2665 as Glasses (see opponent's hand)",
+            "Play 8\u2660 as Glasses (see opponent's hand)"
+          ],
+          "visit_counts": {
+            "Play 10\u2660 for points": 696,
+            "Play 8\u2665 for points": 1836,
+            "Play 8\u2660 for points": 1739,
+            "Play 6\u2665 for points": 275,
+            "Draw": 63,
+            "Play 3\u2666 for points": 291,
+            "Play 8\u2665 as Glasses (see opponent's hand)": 49,
+            "Play 8\u2660 as Glasses (see opponent's hand)": 51
+          },
+          "win_rates": {
+            "Play 10\u2660 for points": 0.7816091954022989,
+            "Play 8\u2665 for points": 0.840958605664488,
+            "Play 8\u2660 for points": 0.8384128809660725,
+            "Play 6\u2665 for points": 0.6872727272727273,
+            "Draw": 0.4126984126984127,
+            "Play 3\u2666 for points": 0.6941580756013745,
+            "Play 8\u2665 as Glasses (see opponent's hand)": 0.3469387755102041,
+            "Play 8\u2660 as Glasses (see opponent's hand)": 0.35294117647058826
+          },
+          "selected_move": "Play 8\u2665 for points",
+          "selected_visits": 1836,
+          "selected_win_rate": 0.840958605664488,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "45f35df771b6",
+          "legal_moves": [
+            "Play 10\u2660 for points",
+            "Play 8\u2660 for points",
+            "Play 6\u2665 for points",
+            "Draw",
+            "Play 3\u2666 for points",
+            "Play 8\u2660 as Glasses (see opponent's hand)",
+            "Scuttle 9\u2660 with 10\u2660"
+          ],
+          "visit_counts": {
+            "Play 10\u2660 for points": 2367,
+            "Play 8\u2660 for points": 1604,
+            "Play 6\u2665 for points": 476,
+            "Draw": 41,
+            "Play 3\u2666 for points": 187,
+            "Play 8\u2660 as Glasses (see opponent's hand)": 38,
+            "Scuttle 9\u2660 with 10\u2660": 287
+          },
+          "win_rates": {
+            "Play 10\u2660 for points": 0.9302915082382763,
+            "Play 8\u2660 for points": 0.9114713216957606,
+            "Play 6\u2665 for points": 0.8256302521008403,
+            "Draw": 0.36585365853658536,
+            "Play 3\u2666 for points": 0.7112299465240641,
+            "Play 8\u2660 as Glasses (see opponent's hand)": 0.34210526315789475,
+            "Scuttle 9\u2660 with 10\u2660": 0.7700348432055749
+          },
+          "selected_move": "Play 10\u2660 for points",
+          "selected_visits": 2367,
+          "selected_win_rate": 0.9302915082382763,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "a78fd163a687",
+          "legal_moves": [
+            "Play 6\u2665 for points",
+            "Play 3\u2666 for points",
+            "Play 8\u2660 for points",
+            "Draw",
+            "Play 8\u2660 as Glasses (see opponent's hand)",
+            "Play 6\u2665 as one-off (scrap all permanents)"
+          ],
+          "visit_counts": {
+            "Play 6\u2665 for points": 1638,
+            "Play 3\u2666 for points": 1638,
+            "Play 8\u2660 for points": 1638,
+            "Draw": 28,
+            "Play 8\u2660 as Glasses (see opponent's hand)": 30,
+            "Play 6\u2665 as one-off (scrap all permanents)": 28
+          },
+          "win_rates": {
+            "Play 6\u2665 for points": 1.0,
+            "Play 3\u2666 for points": 1.0,
+            "Play 8\u2660 for points": 1.0,
+            "Draw": 0.32142857142857145,
+            "Play 8\u2660 as Glasses (see opponent's hand)": 0.3333333333333333,
+            "Play 6\u2665 as one-off (scrap all permanents)": 0.32142857142857145
+          },
+          "selected_move": "Play 6\u2665 for points",
+          "selected_visits": 1638,
+          "selected_win_rate": 1.0,
+          "game_result": 1.0
+        }
+      ]
+    },
+    {
+      "game_id": "421d7bb4-1fdc-47f6-8593-b1e5c0570cf3",
+      "timestamp": "2026-02-04T13:58:54.285435",
+      "seed": 2,
+      "mcts_player": 0,
+      "mcts_iterations": 5000,
+      "opponent_strategy": "heuristic",
+      "winner": 0,
+      "final_scores": [
+        26,
+        0
+      ],
+      "mcts_won": true,
+      "mcts_result": 1.0,
+      "moves": [
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f299492078f3",
+          "legal_moves": [
+            "Play 10\u2663 for points",
+            "Play 9\u2666 for points",
+            "Play 4\u2665 as one-off (force discard)",
+            "Play 5\u2663 for points",
+            "Play 5\u2663 as one-off (draw two)",
+            "Draw",
+            "Play 4\u2665 for points",
+            "Play 3\u2666 for points"
+          ],
+          "visit_counts": {
+            "Play 10\u2663 for points": 190,
+            "Play 9\u2666 for points": 407,
+            "Play 4\u2665 as one-off (force discard)": 171,
+            "Play 5\u2663 for points": 697,
+            "Play 5\u2663 as one-off (draw two)": 1377,
+            "Draw": 195,
+            "Play 4\u2665 for points": 753,
+            "Play 3\u2666 for points": 1210
+          },
+          "win_rates": {
+            "Play 10\u2663 for points": 0.3157894736842105,
+            "Play 9\u2666 for points": 0.4103194103194103,
+            "Play 4\u2665 as one-off (force discard)": 0.2982456140350877,
+            "Play 5\u2663 for points": 0.45911047345767575,
+            "Play 5\u2663 as one-off (draw two)": 0.5068990559186638,
+            "Draw": 0.31794871794871793,
+            "Play 4\u2665 for points": 0.4648074369189907,
+            "Play 3\u2666 for points": 0.49669421487603305
+          },
+          "selected_move": "Play 5\u2663 as one-off (draw two)",
+          "selected_visits": 1377,
+          "selected_win_rate": 0.5068990559186638,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "45f35df771b6",
+          "legal_moves": [
+            "Play 10\u2663 for points",
+            "Play 9\u2666 for points",
+            "Play 9\u2665 for points",
+            "Play J\u2665 to steal 10\u2666",
+            "Play 4\u2665 as one-off (force discard)",
+            "Draw",
+            "Play 4\u2665 for points",
+            "Play 3\u2666 for points",
+            "Play 3\u2666 as one-off (revive 5\u2663)"
+          ],
+          "visit_counts": {
+            "Play 10\u2663 for points": 148,
+            "Play 9\u2666 for points": 284,
+            "Play 9\u2665 for points": 131,
+            "Play J\u2665 to steal 10\u2666": 3861,
+            "Play 4\u2665 as one-off (force discard)": 103,
+            "Draw": 62,
+            "Play 4\u2665 for points": 139,
+            "Play 3\u2666 for points": 212,
+            "Play 3\u2666 as one-off (revive 5\u2663)": 60
+          },
+          "win_rates": {
+            "Play 10\u2663 for points": 0.4594594594594595,
+            "Play 9\u2666 for points": 0.5528169014084507,
+            "Play 9\u2665 for points": 0.4351145038167939,
+            "Play J\u2665 to steal 10\u2666": 0.7358197358197358,
+            "Play 4\u2665 as one-off (force discard)": 0.3883495145631068,
+            "Draw": 0.27419354838709675,
+            "Play 4\u2665 for points": 0.4460431654676259,
+            "Play 3\u2666 for points": 0.5141509433962265,
+            "Play 3\u2666 as one-off (revive 5\u2663)": 0.26666666666666666
+          },
+          "selected_move": "Play J\u2665 to steal 10\u2666",
+          "selected_visits": 3861,
+          "selected_win_rate": 0.7358197358197358,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "a78fd163a687",
+          "legal_moves": [
+            "Play 10\u2663 for points",
+            "Play 9\u2666 for points",
+            "Play 9\u2665 for points",
+            "Play 4\u2665 as one-off (force discard)",
+            "Draw",
+            "Play 4\u2665 for points",
+            "Play 3\u2666 for points",
+            "Play 9\u2666 as one-off (return J\u2665)",
+            "Play 9\u2665 as one-off (return J\u2665)",
+            "Play 3\u2666 as one-off (revive 5\u2663)",
+            "Scuttle 9\u2663 with 9\u2666",
+            "Scuttle 9\u2663 with 9\u2665",
+            "Scuttle 9\u2663 with 10\u2663"
+          ],
+          "visit_counts": {
+            "Play 10\u2663 for points": 399,
+            "Play 9\u2666 for points": 859,
+            "Play 9\u2665 for points": 993,
+            "Play 4\u2665 as one-off (force discard)": 287,
+            "Draw": 98,
+            "Play 4\u2665 for points": 562,
+            "Play 3\u2666 for points": 606,
+            "Play 9\u2666 as one-off (return J\u2665)": 21,
+            "Play 9\u2665 as one-off (return J\u2665)": 17,
+            "Play 3\u2666 as one-off (revive 5\u2663)": 90,
+            "Scuttle 9\u2663 with 9\u2666": 324,
+            "Scuttle 9\u2663 with 9\u2665": 530,
+            "Scuttle 9\u2663 with 10\u2663": 214
+          },
+          "win_rates": {
+            "Play 10\u2663 for points": 0.8546365914786967,
+            "Play 9\u2666 for points": 0.9220023282887078,
+            "Play 9\u2665 for points": 0.9315206445115811,
+            "Play 4\u2665 as one-off (force discard)": 0.818815331010453,
+            "Draw": 0.6428571428571429,
+            "Play 4\u2665 for points": 0.8896797153024911,
+            "Play 3\u2666 for points": 0.8943894389438944,
+            "Play 9\u2666 as one-off (return J\u2665)": 0.14285714285714285,
+            "Play 9\u2665 as one-off (return J\u2665)": 0.058823529411764705,
+            "Play 3\u2666 as one-off (revive 5\u2663)": 0.6222222222222222,
+            "Scuttle 9\u2663 with 9\u2666": 0.8333333333333334,
+            "Scuttle 9\u2663 with 9\u2665": 0.8830188679245283,
+            "Scuttle 9\u2663 with 10\u2663": 0.780373831775701
+          },
+          "selected_move": "Play 9\u2665 for points",
+          "selected_visits": 993,
+          "selected_win_rate": 0.9315206445115811,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "COUNTER",
+          "state_hash": "afd13014e786",
+          "legal_moves": [
+            "Decline to counter"
+          ],
+          "visit_counts": {
+            "Decline to counter": 1
+          },
+          "win_rates": {
+            "Decline to counter": 0.5
+          },
+          "selected_move": "Decline to counter",
+          "selected_visits": 1,
+          "selected_win_rate": 0.5,
+          "game_result": 1.0
+        },
+        {
+          "turn": 4,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "d6fd0565575a",
+          "legal_moves": [
+            "Play 10\u2663 for points",
+            "Play 9\u2666 for points",
+            "Play 3\u2666 as one-off (revive 5\u2663)",
+            "Play 3\u2666 as one-off (revive A\u2665)",
+            "Play 3\u2666 as one-off (revive 9\u2665)",
+            "Play 3\u2666 as one-off (revive J\u2665)",
+            "Play 3\u2666 as one-off (revive 10\u2666)",
+            "Play 3\u2666 as one-off (revive 9\u2663)",
+            "Draw",
+            "Play 4\u2665 for points",
+            "Play 3\u2666 for points",
+            "Play 4\u2665 as one-off (force discard)"
+          ],
+          "visit_counts": {
+            "Play 10\u2663 for points": 485,
+            "Play 9\u2666 for points": 467,
+            "Play 3\u2666 as one-off (revive 5\u2663)": 295,
+            "Play 3\u2666 as one-off (revive A\u2665)": 224,
+            "Play 3\u2666 as one-off (revive 9\u2665)": 497,
+            "Play 3\u2666 as one-off (revive J\u2665)": 516,
+            "Play 3\u2666 as one-off (revive 10\u2666)": 485,
+            "Play 3\u2666 as one-off (revive 9\u2663)": 446,
+            "Draw": 376,
+            "Play 4\u2665 for points": 344,
+            "Play 3\u2666 for points": 433,
+            "Play 4\u2665 as one-off (force discard)": 432
+          },
+          "win_rates": {
+            "Play 10\u2663 for points": 0.9855670103092784,
+            "Play 9\u2666 for points": 0.9807280513918629,
+            "Play 3\u2666 as one-off (revive 5\u2663)": 0.9322033898305084,
+            "Play 3\u2666 as one-off (revive A\u2665)": 0.8973214285714286,
+            "Play 3\u2666 as one-off (revive 9\u2665)": 0.9879275653923542,
+            "Play 3\u2666 as one-off (revive J\u2665)": 0.9903100775193798,
+            "Play 3\u2666 as one-off (revive 10\u2666)": 0.9855670103092784,
+            "Play 3\u2666 as one-off (revive 9\u2663)": 0.9775784753363229,
+            "Draw": 0.9601063829787234,
+            "Play 4\u2665 for points": 0.9505813953488372,
+            "Play 3\u2666 for points": 0.9745958429561201,
+            "Play 4\u2665 as one-off (force discard)": 0.9745370370370371
+          },
+          "selected_move": "Play 3\u2666 as one-off (revive J\u2665)",
+          "selected_visits": 516,
+          "selected_win_rate": 0.9903100775193798,
+          "game_result": 1.0
+        },
+        {
+          "turn": 5,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "1de318be0dfc",
+          "legal_moves": [
+            "Play 10\u2663 for points",
+            "Play 9\u2666 for points",
+            "Draw",
+            "Play 4\u2665 for points",
+            "Play 4\u2665 as one-off (force discard)",
+            "Play 9\u2666 as one-off (return K\u2660)"
+          ],
+          "visit_counts": {
+            "Play 10\u2663 for points": 1039,
+            "Play 9\u2666 for points": 1278,
+            "Draw": 598,
+            "Play 4\u2665 for points": 1096,
+            "Play 4\u2665 as one-off (force discard)": 694,
+            "Play 9\u2666 as one-off (return K\u2660)": 295
+          },
+          "win_rates": {
+            "Play 10\u2663 for points": 0.9701636188642926,
+            "Play 9\u2666 for points": 0.9827856025039123,
+            "Draw": 0.9280936454849499,
+            "Play 4\u2665 for points": 0.9735401459854015,
+            "Play 4\u2665 as one-off (force discard)": 0.9409221902017291,
+            "Play 9\u2666 as one-off (return K\u2660)": 0.8576271186440678
+          },
+          "selected_move": "Play 9\u2666 for points",
+          "selected_visits": 1278,
+          "selected_win_rate": 0.9827856025039123,
+          "game_result": 1.0
+        },
+        {
+          "turn": 6,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f74711f6296e",
+          "legal_moves": [
+            "Scuttle 7\u2663 with 10\u2663",
+            "Play 10\u2663 for points",
+            "Play J\u2665 to steal 7\u2663",
+            "Draw",
+            "Play 4\u2665 for points",
+            "Play 4\u2665 as one-off (force discard)"
+          ],
+          "visit_counts": {
+            "Scuttle 7\u2663 with 10\u2663": 366,
+            "Play 10\u2663 for points": 1107,
+            "Play J\u2665 to steal 7\u2663": 1337,
+            "Draw": 657,
+            "Play 4\u2665 for points": 1003,
+            "Play 4\u2665 as one-off (force discard)": 530
+          },
+          "win_rates": {
+            "Scuttle 7\u2663 with 10\u2663": 0.8934426229508197,
+            "Play 10\u2663 for points": 0.986449864498645,
+            "Play J\u2665 to steal 7\u2663": 0.9985041136873598,
+            "Draw": 0.9497716894977168,
+            "Play 4\u2665 for points": 0.9810568295114656,
+            "Play 4\u2665 as one-off (force discard)": 0.9320754716981132
+          },
+          "selected_move": "Play J\u2665 to steal 7\u2663",
+          "selected_visits": 1337,
+          "selected_win_rate": 0.9985041136873598,
+          "game_result": 1.0
+        },
+        {
+          "turn": 7,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "7f0988f70c71",
+          "legal_moves": [
+            "Play 10\u2663 for points",
+            "Draw",
+            "Play 4\u2665 for points",
+            "Play 4\u2665 as one-off (force discard)"
+          ],
+          "visit_counts": {
+            "Play 10\u2663 for points": 1336,
+            "Draw": 1172,
+            "Play 4\u2665 for points": 1246,
+            "Play 4\u2665 as one-off (force discard)": 1246
+          },
+          "win_rates": {
+            "Play 10\u2663 for points": 1.0,
+            "Draw": 0.992320819112628,
+            "Play 4\u2665 for points": 0.9959871589085072,
+            "Play 4\u2665 as one-off (force discard)": 0.9959871589085072
+          },
+          "selected_move": "Play 10\u2663 for points",
+          "selected_visits": 1336,
+          "selected_win_rate": 1.0,
+          "game_result": 1.0
+        }
+      ]
+    },
+    {
+      "game_id": "ba92c487-b32c-489a-9575-6990d3bf674a",
+      "timestamp": "2026-02-04T13:58:54.285473",
+      "seed": 8,
+      "mcts_player": 0,
+      "mcts_iterations": 5000,
+      "opponent_strategy": "heuristic",
+      "winner": 0,
+      "final_scores": [
+        16,
+        12
+      ],
+      "mcts_won": true,
+      "mcts_result": 1.0,
+      "moves": [
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f299492078f3",
+          "legal_moves": [
+            "Play 9\u2666 for points",
+            "Play 5\u2663 for points",
+            "Play 5\u2663 as one-off (draw two)",
+            "Draw",
+            "Play 3\u2665 for points",
+            "Play Q\u2660 for protection",
+            "Play Q\u2663 for protection"
+          ],
+          "visit_counts": {
+            "Play 9\u2666 for points": 246,
+            "Play 5\u2663 for points": 197,
+            "Play 5\u2663 as one-off (draw two)": 1604,
+            "Draw": 1522,
+            "Play 3\u2665 for points": 260,
+            "Play Q\u2660 for protection": 472,
+            "Play Q\u2663 for protection": 699
+          },
+          "win_rates": {
+            "Play 9\u2666 for points": 0.08130081300813008,
+            "Play 5\u2663 for points": 0.050761421319796954,
+            "Play 5\u2663 as one-off (draw two)": 0.24189526184538654,
+            "Draw": 0.23915900131406045,
+            "Play 3\u2665 for points": 0.08846153846153847,
+            "Play Q\u2660 for protection": 0.15889830508474576,
+            "Play Q\u2663 for protection": 0.1888412017167382
+          },
+          "selected_move": "Play 5\u2663 as one-off (draw two)",
+          "selected_visits": 1604,
+          "selected_win_rate": 0.24189526184538654,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "45f35df771b6",
+          "legal_moves": [
+            "Play 9\u2666 for points",
+            "Play K\u2665 to reduce win threshold",
+            "Play 7\u2663 for points",
+            "Play 7\u2663 as one-off (play from deck)",
+            "Draw",
+            "Play 3\u2665 for points",
+            "Play Q\u2660 for protection",
+            "Play Q\u2663 for protection",
+            "Play 9\u2666 as one-off (return K\u2660)",
+            "Play 3\u2665 as one-off (revive 5\u2663)"
+          ],
+          "visit_counts": {
+            "Play 9\u2666 for points": 644,
+            "Play K\u2665 to reduce win threshold": 1295,
+            "Play 7\u2663 for points": 736,
+            "Play 7\u2663 as one-off (play from deck)": 285,
+            "Draw": 192,
+            "Play 3\u2665 for points": 397,
+            "Play Q\u2660 for protection": 408,
+            "Play Q\u2663 for protection": 578,
+            "Play 9\u2666 as one-off (return K\u2660)": 160,
+            "Play 3\u2665 as one-off (revive 5\u2663)": 305
+          },
+          "win_rates": {
+            "Play 9\u2666 for points": 0.2080745341614907,
+            "Play K\u2665 to reduce win threshold": 0.25637065637065637,
+            "Play 7\u2663 for points": 0.21875,
+            "Play 7\u2663 as one-off (play from deck)": 0.12631578947368421,
+            "Draw": 0.07291666666666667,
+            "Play 3\u2665 for points": 0.163727959697733,
+            "Play Q\u2660 for protection": 0.16666666666666666,
+            "Play Q\u2663 for protection": 0.19896193771626297,
+            "Play 9\u2666 as one-off (return K\u2660)": 0.04375,
+            "Play 3\u2665 as one-off (revive 5\u2663)": 0.13442622950819672
+          },
+          "selected_move": "Play K\u2665 to reduce win threshold",
+          "selected_visits": 1295,
+          "selected_win_rate": 0.25637065637065637,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "a78fd163a687",
+          "legal_moves": [
+            "Play 9\u2666 for points",
+            "Play 7\u2663 for points",
+            "Play 7\u2663 as one-off (play from deck)",
+            "Draw",
+            "Play 3\u2665 for points",
+            "Play Q\u2660 for protection",
+            "Play Q\u2663 for protection",
+            "Play 9\u2666 as one-off (return K\u2660)",
+            "Play 9\u2666 as one-off (return K\u2665)",
+            "Play 3\u2665 as one-off (revive 5\u2663)",
+            "Scuttle 6\u2666 with 7\u2663",
+            "Scuttle 6\u2666 with 9\u2666"
+          ],
+          "visit_counts": {
+            "Play 9\u2666 for points": 477,
+            "Play 7\u2663 for points": 904,
+            "Play 7\u2663 as one-off (play from deck)": 333,
+            "Draw": 213,
+            "Play 3\u2665 for points": 817,
+            "Play Q\u2660 for protection": 451,
+            "Play Q\u2663 for protection": 506,
+            "Play 9\u2666 as one-off (return K\u2660)": 177,
+            "Play 9\u2666 as one-off (return K\u2665)": 142,
+            "Play 3\u2665 as one-off (revive 5\u2663)": 513,
+            "Scuttle 6\u2666 with 7\u2663": 305,
+            "Scuttle 6\u2666 with 9\u2666": 162
+          },
+          "win_rates": {
+            "Play 9\u2666 for points": 0.17819706498951782,
+            "Play 7\u2663 for points": 0.23008849557522124,
+            "Play 7\u2663 as one-off (play from deck)": 0.14114114114114115,
+            "Draw": 0.08450704225352113,
+            "Play 3\u2665 for points": 0.22399020807833536,
+            "Play Q\u2660 for protection": 0.1729490022172949,
+            "Play Q\u2663 for protection": 0.18379446640316205,
+            "Play 9\u2666 as one-off (return K\u2660)": 0.05649717514124294,
+            "Play 9\u2666 as one-off (return K\u2665)": 0.02112676056338028,
+            "Play 3\u2665 as one-off (revive 5\u2663)": 0.18518518518518517,
+            "Scuttle 6\u2666 with 7\u2663": 0.13114754098360656,
+            "Scuttle 6\u2666 with 9\u2666": 0.043209876543209874
+          },
+          "selected_move": "Play 7\u2663 for points",
+          "selected_visits": 904,
+          "selected_win_rate": 0.23008849557522124,
+          "game_result": 1.0
+        },
+        {
+          "turn": 4,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "d6fd0565575a",
+          "legal_moves": [
+            "Play 9\u2666 for points",
+            "Scuttle 6\u2666 with 9\u2666",
+            "Scuttle 6\u2660 with 9\u2666",
+            "Draw",
+            "Play 3\u2665 for points",
+            "Play Q\u2660 for protection",
+            "Play Q\u2663 for protection",
+            "Play 9\u2666 as one-off (return K\u2660)",
+            "Play 9\u2666 as one-off (return K\u2665)",
+            "Play 3\u2665 as one-off (revive 5\u2663)"
+          ],
+          "visit_counts": {
+            "Play 9\u2666 for points": 4779,
+            "Scuttle 6\u2666 with 9\u2666": 19,
+            "Scuttle 6\u2660 with 9\u2666": 17,
+            "Draw": 26,
+            "Play 3\u2665 for points": 27,
+            "Play Q\u2660 for protection": 33,
+            "Play Q\u2663 for protection": 33,
+            "Play 9\u2666 as one-off (return K\u2660)": 21,
+            "Play 9\u2666 as one-off (return K\u2665)": 16,
+            "Play 3\u2665 as one-off (revive 5\u2663)": 29
+          },
+          "win_rates": {
+            "Play 9\u2666 for points": 1.0,
+            "Scuttle 6\u2666 with 9\u2666": 0.10526315789473684,
+            "Scuttle 6\u2660 with 9\u2666": 0.058823529411764705,
+            "Draw": 0.23076923076923078,
+            "Play 3\u2665 for points": 0.25925925925925924,
+            "Play Q\u2660 for protection": 0.3333333333333333,
+            "Play Q\u2663 for protection": 0.3333333333333333,
+            "Play 9\u2666 as one-off (return K\u2660)": 0.14285714285714285,
+            "Play 9\u2666 as one-off (return K\u2665)": 0.0,
+            "Play 3\u2665 as one-off (revive 5\u2663)": 0.27586206896551724
+          },
+          "selected_move": "Play 9\u2666 for points",
+          "selected_visits": 4779,
+          "selected_win_rate": 1.0,
+          "game_result": 1.0
+        }
+      ]
+    },
+    {
+      "game_id": "c01f3e2c-5319-4c7d-9ea0-589bb9cec091",
+      "timestamp": "2026-02-04T13:58:54.285500",
+      "seed": 3,
+      "mcts_player": 0,
+      "mcts_iterations": 5000,
+      "opponent_strategy": "heuristic",
+      "winner": 0,
+      "final_scores": [
+        22,
+        5
+      ],
+      "mcts_won": true,
+      "mcts_result": 1.0,
+      "moves": [
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f299492078f3",
+          "legal_moves": [
+            "Play 7\u2666 for points",
+            "Play 4\u2663 as one-off (force discard)",
+            "Play 7\u2666 as one-off (play from deck)",
+            "Play 4\u2665 as one-off (force discard)",
+            "Draw",
+            "Play 4\u2663 for points",
+            "Play 4\u2665 for points",
+            "Play 3\u2665 for points",
+            "Play A\u2666 for points"
+          ],
+          "visit_counts": {
+            "Play 7\u2666 for points": 484,
+            "Play 4\u2663 as one-off (force discard)": 905,
+            "Play 7\u2666 as one-off (play from deck)": 536,
+            "Play 4\u2665 as one-off (force discard)": 895,
+            "Draw": 581,
+            "Play 4\u2663 for points": 418,
+            "Play 4\u2665 for points": 309,
+            "Play 3\u2665 for points": 448,
+            "Play A\u2666 for points": 424
+          },
+          "win_rates": {
+            "Play 7\u2666 for points": 0.07644628099173553,
+            "Play 4\u2663 as one-off (force discard)": 0.1270718232044199,
+            "Play 7\u2666 as one-off (play from deck)": 0.08582089552238806,
+            "Play 4\u2665 as one-off (force discard)": 0.12625698324022347,
+            "Draw": 0.09294320137693632,
+            "Play 4\u2663 for points": 0.06220095693779904,
+            "Play 4\u2665 for points": 0.02912621359223301,
+            "Play 3\u2665 for points": 0.06919642857142858,
+            "Play A\u2666 for points": 0.06367924528301887
+          },
+          "selected_move": "Play 4\u2663 as one-off (force discard)",
+          "selected_visits": 905,
+          "selected_win_rate": 0.1270718232044199,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "45f35df771b6",
+          "legal_moves": [
+            "Play A\u2666 as one-off (scrap all points)",
+            "Play 3\u2665 as one-off (revive 4\u2663)",
+            "Play 3\u2665 as one-off (revive J\u2663)",
+            "Play 3\u2665 as one-off (revive J\u2665)",
+            "Play 7\u2666 for points",
+            "Play 7\u2666 as one-off (play from deck)",
+            "Play 4\u2665 as one-off (force discard)",
+            "Draw",
+            "Play 4\u2665 for points",
+            "Play 3\u2665 for points",
+            "Play A\u2666 for points"
+          ],
+          "visit_counts": {
+            "Play A\u2666 as one-off (scrap all points)": 1271,
+            "Play 3\u2665 as one-off (revive 4\u2663)": 192,
+            "Play 3\u2665 as one-off (revive J\u2663)": 962,
+            "Play 3\u2665 as one-off (revive J\u2665)": 857,
+            "Play 7\u2666 for points": 131,
+            "Play 7\u2666 as one-off (play from deck)": 128,
+            "Play 4\u2665 as one-off (force discard)": 477,
+            "Draw": 601,
+            "Play 4\u2665 for points": 131,
+            "Play 3\u2665 for points": 122,
+            "Play A\u2666 for points": 128
+          },
+          "win_rates": {
+            "Play A\u2666 as one-off (scrap all points)": 0.4067663257277734,
+            "Play 3\u2665 as one-off (revive 4\u2663)": 0.22395833333333334,
+            "Play 3\u2665 as one-off (revive J\u2663)": 0.3898128898128898,
+            "Play 3\u2665 as one-off (revive J\u2665)": 0.38156359393232203,
+            "Play 7\u2666 for points": 0.16030534351145037,
+            "Play 7\u2666 as one-off (play from deck)": 0.15625,
+            "Play 4\u2665 as one-off (force discard)": 0.3333333333333333,
+            "Draw": 0.3544093178036606,
+            "Play 4\u2665 for points": 0.16030534351145037,
+            "Play 3\u2665 for points": 0.14754098360655737,
+            "Play A\u2666 for points": 0.15625
+          },
+          "selected_move": "Play A\u2666 as one-off (scrap all points)",
+          "selected_visits": 1271,
+          "selected_win_rate": 0.4067663257277734,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "a78fd163a687",
+          "legal_moves": [
+            "Play 3\u2665 as one-off (revive 4\u2663)",
+            "Play 3\u2665 as one-off (revive J\u2663)",
+            "Play 3\u2665 as one-off (revive J\u2665)",
+            "Play 3\u2665 as one-off (revive A\u2666)",
+            "Play 3\u2665 as one-off (revive 10\u2666)",
+            "Play 7\u2666 for points",
+            "Play 7\u2666 as one-off (play from deck)",
+            "Play 4\u2665 as one-off (force discard)",
+            "Draw",
+            "Play 4\u2665 for points",
+            "Play 3\u2665 for points"
+          ],
+          "visit_counts": {
+            "Play 3\u2665 as one-off (revive 4\u2663)": 90,
+            "Play 3\u2665 as one-off (revive J\u2663)": 1477,
+            "Play 3\u2665 as one-off (revive J\u2665)": 1603,
+            "Play 3\u2665 as one-off (revive A\u2666)": 71,
+            "Play 3\u2665 as one-off (revive 10\u2666)": 286,
+            "Play 7\u2666 for points": 124,
+            "Play 7\u2666 as one-off (play from deck)": 102,
+            "Play 4\u2665 as one-off (force discard)": 312,
+            "Draw": 722,
+            "Play 4\u2665 for points": 83,
+            "Play 3\u2665 for points": 130
+          },
+          "win_rates": {
+            "Play 3\u2665 as one-off (revive 4\u2663)": 0.2111111111111111,
+            "Play 3\u2665 as one-off (revive J\u2663)": 0.5396073121191605,
+            "Play 3\u2665 as one-off (revive J\u2665)": 0.543980037429819,
+            "Play 3\u2665 as one-off (revive A\u2666)": 0.15492957746478872,
+            "Play 3\u2665 as one-off (revive 10\u2666)": 0.4090909090909091,
+            "Play 7\u2666 for points": 0.27419354838709675,
+            "Play 7\u2666 as one-off (play from deck)": 0.23529411764705882,
+            "Play 4\u2665 as one-off (force discard)": 0.41346153846153844,
+            "Draw": 0.4930747922437673,
+            "Play 4\u2665 for points": 0.1927710843373494,
+            "Play 3\u2665 for points": 0.2846153846153846
+          },
+          "selected_move": "Play 3\u2665 as one-off (revive J\u2665)",
+          "selected_visits": 1603,
+          "selected_win_rate": 0.543980037429819,
+          "game_result": 1.0
+        },
+        {
+          "turn": 4,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "d6fd0565575a",
+          "legal_moves": [
+            "Play J\u2665 to steal 7\u2665",
+            "Play 7\u2666 for points",
+            "Draw",
+            "Play 7\u2666 as one-off (play from deck)",
+            "Play 4\u2665 for points",
+            "Play 4\u2665 as one-off (force discard)"
+          ],
+          "visit_counts": {
+            "Play J\u2665 to steal 7\u2665": 1226,
+            "Play 7\u2666 for points": 2751,
+            "Draw": 714,
+            "Play 7\u2666 as one-off (play from deck)": 172,
+            "Play 4\u2665 for points": 62,
+            "Play 4\u2665 as one-off (force discard)": 75
+          },
+          "win_rates": {
+            "Play J\u2665 to steal 7\u2665": 0.7430668841761827,
+            "Play 7\u2666 for points": 0.7917121046892039,
+            "Draw": 0.7072829131652661,
+            "Play 7\u2666 as one-off (play from deck)": 0.5465116279069767,
+            "Play 4\u2665 for points": 0.3387096774193548,
+            "Play 4\u2665 as one-off (force discard)": 0.38666666666666666
+          },
+          "selected_move": "Play 7\u2666 for points",
+          "selected_visits": 2751,
+          "selected_win_rate": 0.7917121046892039,
+          "game_result": 1.0
+        },
+        {
+          "turn": 5,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "1de318be0dfc",
+          "legal_moves": [
+            "Play J\u2665 to steal 7\u2665",
+            "Draw",
+            "Play 4\u2665 for points",
+            "Play 4\u2665 as one-off (force discard)"
+          ],
+          "visit_counts": {
+            "Play J\u2665 to steal 7\u2665": 63,
+            "Draw": 27,
+            "Play 4\u2665 for points": 33,
+            "Play 4\u2665 as one-off (force discard)": 4877
+          },
+          "win_rates": {
+            "Play J\u2665 to steal 7\u2665": 0.47619047619047616,
+            "Draw": 0.18518518518518517,
+            "Play 4\u2665 for points": 0.2727272727272727,
+            "Play 4\u2665 as one-off (force discard)": 0.9393069509944638
+          },
+          "selected_move": "Play 4\u2665 as one-off (force discard)",
+          "selected_visits": 4877,
+          "selected_win_rate": 0.9393069509944638,
+          "game_result": 1.0
+        },
+        {
+          "turn": 6,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f74711f6296e",
+          "legal_moves": [
+            "Play J\u2665 to steal 7\u2665",
+            "Draw"
+          ],
+          "visit_counts": {
+            "Play J\u2665 to steal 7\u2665": 4965,
+            "Draw": 35
+          },
+          "win_rates": {
+            "Play J\u2665 to steal 7\u2665": 0.9570996978851963,
+            "Draw": 0.3142857142857143
+          },
+          "selected_move": "Play J\u2665 to steal 7\u2665",
+          "selected_visits": 4965,
+          "selected_win_rate": 0.9570996978851963,
+          "game_result": 1.0
+        },
+        {
+          "turn": 7,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "7f0988f70c71",
+          "legal_moves": [
+            "Draw"
+          ],
+          "visit_counts": {
+            "Draw": 1
+          },
+          "win_rates": {
+            "Draw": 0.5
+          },
+          "selected_move": "Draw",
+          "selected_visits": 1,
+          "selected_win_rate": 0.5,
+          "game_result": 1.0
+        },
+        {
+          "turn": 8,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "c89d5f2d3a18",
+          "legal_moves": [
+            "Play 8\u2665 for points",
+            "Draw",
+            "Play 8\u2665 as Glasses (see opponent's hand)",
+            "Scuttle 5\u2666 with 8\u2665"
+          ],
+          "visit_counts": {
+            "Play 8\u2665 for points": 2689,
+            "Draw": 2242,
+            "Play 8\u2665 as Glasses (see opponent's hand)": 26,
+            "Scuttle 5\u2666 with 8\u2665": 43
+          },
+          "win_rates": {
+            "Play 8\u2665 for points": 1.0,
+            "Draw": 0.9924174843889384,
+            "Play 8\u2665 as Glasses (see opponent's hand)": 0.2692307692307692,
+            "Scuttle 5\u2666 with 8\u2665": 0.4418604651162791
+          },
+          "selected_move": "Play 8\u2665 for points",
+          "selected_visits": 2689,
+          "selected_win_rate": 1.0,
+          "game_result": 1.0
+        }
+      ]
+    },
+    {
+      "game_id": "d2ceaa96-6cbe-48cd-8290-29b6bcd94b2b",
+      "timestamp": "2026-02-04T13:58:54.285524",
+      "seed": 6,
+      "mcts_player": 0,
+      "mcts_iterations": 5000,
+      "opponent_strategy": "heuristic",
+      "winner": 0,
+      "final_scores": [
+        10,
+        7
+      ],
+      "mcts_won": true,
+      "mcts_result": 1.0,
+      "moves": [
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f299492078f3",
+          "legal_moves": [
+            "Play K\u2665 to reduce win threshold",
+            "Play 5\u2660 for points",
+            "Play 5\u2663 for points",
+            "Play 5\u2660 as one-off (draw two)",
+            "Play 5\u2663 as one-off (draw two)",
+            "Draw",
+            "Play 2\u2665 for points",
+            "Play A\u2660 for points"
+          ],
+          "visit_counts": {
+            "Play K\u2665 to reduce win threshold": 957,
+            "Play 5\u2660 for points": 468,
+            "Play 5\u2663 for points": 600,
+            "Play 5\u2660 as one-off (draw two)": 697,
+            "Play 5\u2663 as one-off (draw two)": 550,
+            "Draw": 1159,
+            "Play 2\u2665 for points": 303,
+            "Play A\u2660 for points": 266
+          },
+          "win_rates": {
+            "Play K\u2665 to reduce win threshold": 0.1536050156739812,
+            "Play 5\u2660 for points": 0.09615384615384616,
+            "Play 5\u2663 for points": 0.11833333333333333,
+            "Play 5\u2660 as one-off (draw two)": 0.13055954088952654,
+            "Play 5\u2663 as one-off (draw two)": 0.11090909090909092,
+            "Draw": 0.16566005176876616,
+            "Play 2\u2665 for points": 0.04950495049504951,
+            "Play A\u2660 for points": 0.03383458646616541
+          },
+          "selected_move": "Draw",
+          "selected_visits": 1159,
+          "selected_win_rate": 0.16566005176876616,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "45f35df771b6",
+          "legal_moves": [
+            "Play A\u2660 as one-off (scrap all points)",
+            "Play K\u2665 to reduce win threshold",
+            "Play 5\u2660 for points",
+            "Play 5\u2663 for points",
+            "Play 5\u2660 as one-off (draw two)",
+            "Play 5\u2663 as one-off (draw two)",
+            "Draw",
+            "Play 2\u2665 for points",
+            "Play A\u2660 for points",
+            "Play Q\u2666 for protection"
+          ],
+          "visit_counts": {
+            "Play A\u2660 as one-off (scrap all points)": 564,
+            "Play K\u2665 to reduce win threshold": 752,
+            "Play 5\u2660 for points": 265,
+            "Play 5\u2663 for points": 292,
+            "Play 5\u2660 as one-off (draw two)": 363,
+            "Play 5\u2663 as one-off (draw two)": 348,
+            "Draw": 232,
+            "Play 2\u2665 for points": 243,
+            "Play A\u2660 for points": 177,
+            "Play Q\u2666 for protection": 1764
+          },
+          "win_rates": {
+            "Play A\u2660 as one-off (scrap all points)": 0.13652482269503546,
+            "Play K\u2665 to reduce win threshold": 0.1595744680851064,
+            "Play 5\u2660 for points": 0.05660377358490566,
+            "Play 5\u2663 for points": 0.0684931506849315,
+            "Play 5\u2660 as one-off (draw two)": 0.09366391184573003,
+            "Play 5\u2663 as one-off (draw two)": 0.08908045977011494,
+            "Draw": 0.03879310344827586,
+            "Play 2\u2665 for points": 0.04526748971193416,
+            "Play A\u2660 for points": 0.0,
+            "Play Q\u2666 for protection": 0.21201814058956917
+          },
+          "selected_move": "Play Q\u2666 for protection",
+          "selected_visits": 1764,
+          "selected_win_rate": 0.21201814058956917,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "a78fd163a687",
+          "legal_moves": [
+            "Play A\u2660 as one-off (scrap all points)",
+            "Play K\u2665 to reduce win threshold",
+            "Play 5\u2660 for points",
+            "Play 5\u2663 for points",
+            "Play 5\u2660 as one-off (draw two)",
+            "Play 5\u2663 as one-off (draw two)",
+            "Draw",
+            "Play 2\u2665 for points",
+            "Play A\u2660 for points"
+          ],
+          "visit_counts": {
+            "Play A\u2660 as one-off (scrap all points)": 4708,
+            "Play K\u2665 to reduce win threshold": 44,
+            "Play 5\u2660 for points": 36,
+            "Play 5\u2663 for points": 39,
+            "Play 5\u2660 as one-off (draw two)": 33,
+            "Play 5\u2663 as one-off (draw two)": 33,
+            "Draw": 33,
+            "Play 2\u2665 for points": 41,
+            "Play A\u2660 for points": 33
+          },
+          "win_rates": {
+            "Play A\u2660 as one-off (scrap all points)": 0.6607901444350043,
+            "Play K\u2665 to reduce win threshold": 0.09090909090909091,
+            "Play 5\u2660 for points": 0.027777777777777776,
+            "Play 5\u2663 for points": 0.05128205128205128,
+            "Play 5\u2660 as one-off (draw two)": 0.0,
+            "Play 5\u2663 as one-off (draw two)": 0.0,
+            "Draw": 0.0,
+            "Play 2\u2665 for points": 0.07317073170731707,
+            "Play A\u2660 for points": 0.0
+          },
+          "selected_move": "Play A\u2660 as one-off (scrap all points)",
+          "selected_visits": 4708,
+          "selected_win_rate": 0.6607901444350043,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "COUNTER",
+          "state_hash": "afd13014e786",
+          "legal_moves": [
+            "Counter with 2\u2665",
+            "Decline to counter"
+          ],
+          "visit_counts": {
+            "Counter with 2\u2665": 4969,
+            "Decline to counter": 31
+          },
+          "win_rates": {
+            "Counter with 2\u2665": 0.687462266049507,
+            "Decline to counter": 0.0
+          },
+          "selected_move": "Counter with 2\u2665",
+          "selected_visits": 4969,
+          "selected_win_rate": 0.687462266049507,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "COUNTER",
+          "state_hash": "afd13014e786",
+          "legal_moves": [
+            "Decline to counter"
+          ],
+          "visit_counts": {
+            "Decline to counter": 1
+          },
+          "win_rates": {
+            "Decline to counter": 0.5
+          },
+          "selected_move": "Decline to counter",
+          "selected_visits": 1,
+          "selected_win_rate": 0.5,
+          "game_result": 1.0
+        },
+        {
+          "turn": 4,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "d6fd0565575a",
+          "legal_moves": [
+            "Play K\u2665 to reduce win threshold",
+            "Play 5\u2660 for points",
+            "Play 5\u2663 for points",
+            "Draw",
+            "Play 5\u2660 as one-off (draw two)",
+            "Play 5\u2663 as one-off (draw two)"
+          ],
+          "visit_counts": {
+            "Play K\u2665 to reduce win threshold": 1400,
+            "Play 5\u2660 for points": 1618,
+            "Play 5\u2663 for points": 824,
+            "Draw": 59,
+            "Play 5\u2660 as one-off (draw two)": 700,
+            "Play 5\u2663 as one-off (draw two)": 399
+          },
+          "win_rates": {
+            "Play K\u2665 to reduce win threshold": 0.865,
+            "Play 5\u2660 for points": 0.8689740420271941,
+            "Play 5\u2663 for points": 0.8276699029126213,
+            "Draw": 0.423728813559322,
+            "Play 5\u2660 as one-off (draw two)": 0.8157142857142857,
+            "Play 5\u2663 as one-off (draw two)": 0.7644110275689223
+          },
+          "selected_move": "Play 5\u2660 for points",
+          "selected_visits": 1618,
+          "selected_win_rate": 0.8689740420271941,
+          "game_result": 1.0
+        },
+        {
+          "turn": 5,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "1de318be0dfc",
+          "legal_moves": [
+            "Play K\u2665 to reduce win threshold",
+            "Play 5\u2663 for points",
+            "Draw",
+            "Play 5\u2663 as one-off (draw two)"
+          ],
+          "visit_counts": {
+            "Play K\u2665 to reduce win threshold": 3370,
+            "Play 5\u2663 for points": 952,
+            "Draw": 102,
+            "Play 5\u2663 as one-off (draw two)": 576
+          },
+          "win_rates": {
+            "Play K\u2665 to reduce win threshold": 0.899406528189911,
+            "Play 5\u2663 for points": 0.8361344537815126,
+            "Draw": 0.5588235294117647,
+            "Play 5\u2663 as one-off (draw two)": 0.796875
+          },
+          "selected_move": "Play K\u2665 to reduce win threshold",
+          "selected_visits": 3370,
+          "selected_win_rate": 0.899406528189911,
+          "game_result": 1.0
+        },
+        {
+          "turn": 6,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f74711f6296e",
+          "legal_moves": [
+            "Play 5\u2663 for points",
+            "Draw",
+            "Play 5\u2663 as one-off (draw two)"
+          ],
+          "visit_counts": {
+            "Play 5\u2663 for points": 1463,
+            "Draw": 2003,
+            "Play 5\u2663 as one-off (draw two)": 1534
+          },
+          "win_rates": {
+            "Play 5\u2663 for points": 0.9234449760765551,
+            "Draw": 0.9395906140788817,
+            "Play 5\u2663 as one-off (draw two)": 0.9263363754889179
+          },
+          "selected_move": "Draw",
+          "selected_visits": 2003,
+          "selected_win_rate": 0.9395906140788817,
+          "game_result": 1.0
+        },
+        {
+          "turn": 6,
+          "player": 0,
+          "phase": "COUNTER",
+          "state_hash": "d1a967012954",
+          "legal_moves": [
+            "Decline to counter"
+          ],
+          "visit_counts": {
+            "Decline to counter": 1
+          },
+          "win_rates": {
+            "Decline to counter": 0.5
+          },
+          "selected_move": "Decline to counter",
+          "selected_visits": 1,
+          "selected_win_rate": 0.5,
+          "game_result": 1.0
+        },
+        {
+          "turn": 7,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "7f0988f70c71",
+          "legal_moves": [
+            "Play K\u2660 to reduce win threshold",
+            "Play 5\u2663 for points",
+            "Draw",
+            "Play 5\u2663 as one-off (draw two)"
+          ],
+          "visit_counts": {
+            "Play K\u2660 to reduce win threshold": 1469,
+            "Play 5\u2663 for points": 1833,
+            "Draw": 1152,
+            "Play 5\u2663 as one-off (draw two)": 546
+          },
+          "win_rates": {
+            "Play K\u2660 to reduce win threshold": 0.9707283866575902,
+            "Play 5\u2663 for points": 0.9819967266775778,
+            "Draw": 0.9565972222222222,
+            "Play 5\u2663 as one-off (draw two)": 0.9010989010989011
+          },
+          "selected_move": "Play 5\u2663 for points",
+          "selected_visits": 1833,
+          "selected_win_rate": 0.9819967266775778,
+          "game_result": 1.0
+        },
+        {
+          "turn": 7,
+          "player": 0,
+          "phase": "COUNTER",
+          "state_hash": "954074ce7d72",
+          "legal_moves": [
+            "Decline to counter"
+          ],
+          "visit_counts": {
+            "Decline to counter": 1
+          },
+          "win_rates": {
+            "Decline to counter": 0.5
+          },
+          "selected_move": "Decline to counter",
+          "selected_visits": 1,
+          "selected_win_rate": 0.5,
+          "game_result": 1.0
+        },
+        {
+          "turn": 8,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "c89d5f2d3a18",
+          "legal_moves": [
+            "Play K\u2660 to reduce win threshold",
+            "Draw"
+          ],
+          "visit_counts": {
+            "Play K\u2660 to reduce win threshold": 3968,
+            "Draw": 1032
+          },
+          "win_rates": {
+            "Play K\u2660 to reduce win threshold": 1.0,
+            "Draw": 0.937015503875969
+          },
+          "selected_move": "Play K\u2660 to reduce win threshold",
+          "selected_visits": 3968,
+          "selected_win_rate": 1.0,
+          "game_result": 1.0
+        }
+      ]
+    },
+    {
+      "game_id": "878226fb-f3c1-43ec-be2f-050e9cb584cf",
+      "timestamp": "2026-02-04T13:58:54.285548",
+      "seed": 7,
+      "mcts_player": 0,
+      "mcts_iterations": 5000,
+      "opponent_strategy": "heuristic",
+      "winner": 0,
+      "final_scores": [
+        23,
+        14
+      ],
+      "mcts_won": true,
+      "mcts_result": 1.0,
+      "moves": [
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f299492078f3",
+          "legal_moves": [
+            "Play 6\u2665 for points",
+            "Play 5\u2666 for points",
+            "Play 5\u2666 as one-off (draw two)",
+            "Draw",
+            "Play 2\u2660 for points",
+            "Play A\u2660 for points"
+          ],
+          "visit_counts": {
+            "Play 6\u2665 for points": 648,
+            "Play 5\u2666 for points": 407,
+            "Play 5\u2666 as one-off (draw two)": 2609,
+            "Draw": 492,
+            "Play 2\u2660 for points": 252,
+            "Play A\u2660 for points": 592
+          },
+          "win_rates": {
+            "Play 6\u2665 for points": 0.7870370370370371,
+            "Play 5\u2666 for points": 0.742014742014742,
+            "Play 5\u2666 as one-off (draw two)": 0.8666155615178229,
+            "Draw": 0.7601626016260162,
+            "Play 2\u2660 for points": 0.6865079365079365,
+            "Play A\u2660 for points": 0.777027027027027
+          },
+          "selected_move": "Play 5\u2666 as one-off (draw two)",
+          "selected_visits": 2609,
+          "selected_win_rate": 0.8666155615178229,
+          "game_result": 1.0
+        },
+        {
+          "turn": 1,
+          "player": 0,
+          "phase": "COUNTER",
+          "state_hash": "9cd91ae375dc",
+          "legal_moves": [
+            "Counter with 2\u2660",
+            "Decline to counter"
+          ],
+          "visit_counts": {
+            "Counter with 2\u2660": 4609,
+            "Decline to counter": 391
+          },
+          "win_rates": {
+            "Counter with 2\u2660": 0.8776307224994576,
+            "Decline to counter": 0.7289002557544757
+          },
+          "selected_move": "Counter with 2\u2660",
+          "selected_visits": 4609,
+          "selected_win_rate": 0.8776307224994576,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "45f35df771b6",
+          "legal_moves": [
+            "Play 9\u2663 for points",
+            "Play K\u2665 to reduce win threshold",
+            "Play J\u2663 to steal 7\u2666",
+            "Play 6\u2665 for points",
+            "Draw",
+            "Play A\u2660 for points",
+            "Play A\u2660 as one-off (scrap all points)",
+            "Scuttle 7\u2666 with 9\u2663"
+          ],
+          "visit_counts": {
+            "Play 9\u2663 for points": 903,
+            "Play K\u2665 to reduce win threshold": 762,
+            "Play J\u2663 to steal 7\u2666": 537,
+            "Play 6\u2665 for points": 733,
+            "Draw": 924,
+            "Play A\u2660 for points": 396,
+            "Play A\u2660 as one-off (scrap all points)": 491,
+            "Scuttle 7\u2666 with 9\u2663": 254
+          },
+          "win_rates": {
+            "Play 9\u2663 for points": 0.9180509413067552,
+            "Play K\u2665 to reduce win threshold": 0.905511811023622,
+            "Play J\u2663 to steal 7\u2666": 0.8770949720670391,
+            "Play 6\u2665 for points": 0.903137789904502,
+            "Draw": 0.9199134199134199,
+            "Play A\u2660 for points": 0.8484848484848485,
+            "Play A\u2660 as one-off (scrap all points)": 0.8716904276985743,
+            "Scuttle 7\u2666 with 9\u2663": 0.7952755905511811
+          },
+          "selected_move": "Draw",
+          "selected_visits": 924,
+          "selected_win_rate": 0.9199134199134199,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "COUNTER",
+          "state_hash": "bca533106561",
+          "legal_moves": [
+            "Decline to counter"
+          ],
+          "visit_counts": {
+            "Decline to counter": 1
+          },
+          "win_rates": {
+            "Decline to counter": 0.5
+          },
+          "selected_move": "Decline to counter",
+          "selected_visits": 1,
+          "selected_win_rate": 0.5,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "DISCARD_FOUR",
+          "state_hash": "c9205023e3cb",
+          "legal_moves": [
+            "Discard J\u2663",
+            "Discard K\u2665",
+            "Discard A\u2660",
+            "Discard 6\u2665",
+            "Discard 6\u2660",
+            "Discard 9\u2663"
+          ],
+          "visit_counts": {
+            "Discard J\u2663": 729,
+            "Discard K\u2665": 403,
+            "Discard A\u2660": 1150,
+            "Discard 6\u2665": 847,
+            "Discard 6\u2660": 991,
+            "Discard 9\u2663": 880
+          },
+          "win_rates": {
+            "Discard J\u2663": 0.8834019204389575,
+            "Discard K\u2665": 0.8312655086848635,
+            "Discard A\u2660": 0.9156521739130434,
+            "Discard 6\u2665": 0.8949232585596222,
+            "Discard 6\u2660": 0.9071644803229062,
+            "Discard 9\u2663": 0.8977272727272727
+          },
+          "selected_move": "Discard A\u2660",
+          "selected_visits": 1150,
+          "selected_win_rate": 0.9156521739130434,
+          "game_result": 1.0
+        },
+        {
+          "turn": 2,
+          "player": 0,
+          "phase": "DISCARD_FOUR",
+          "state_hash": "c9205023e3cb",
+          "legal_moves": [
+            "Discard J\u2663",
+            "Discard K\u2665",
+            "Discard 6\u2665",
+            "Discard 6\u2660",
+            "Discard 9\u2663"
+          ],
+          "visit_counts": {
+            "Discard J\u2663": 646,
+            "Discard K\u2665": 726,
+            "Discard 6\u2665": 1337,
+            "Discard 6\u2660": 1226,
+            "Discard 9\u2663": 1065
+          },
+          "win_rates": {
+            "Discard J\u2663": 0.8962848297213623,
+            "Discard K\u2665": 0.9035812672176309,
+            "Discard 6\u2665": 0.943904263275991,
+            "Discard 6\u2660": 0.9388254486133768,
+            "Discard 9\u2663": 0.9305164319248826
+          },
+          "selected_move": "Discard 6\u2665",
+          "selected_visits": 1337,
+          "selected_win_rate": 0.943904263275991,
+          "game_result": 1.0
+        },
+        {
+          "turn": 3,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "a78fd163a687",
+          "legal_moves": [
+            "Play 9\u2663 for points",
+            "Play K\u2665 to reduce win threshold",
+            "Play J\u2663 to steal 7\u2666",
+            "Play 6\u2660 for points",
+            "Draw",
+            "Scuttle 7\u2666 with 9\u2663"
+          ],
+          "visit_counts": {
+            "Play 9\u2663 for points": 1060,
+            "Play K\u2665 to reduce win threshold": 597,
+            "Play J\u2663 to steal 7\u2666": 503,
+            "Play 6\u2660 for points": 1119,
+            "Draw": 1176,
+            "Scuttle 7\u2666 with 9\u2663": 545
+          },
+          "win_rates": {
+            "Play 9\u2663 for points": 0.9528301886792453,
+            "Play K\u2665 to reduce win threshold": 0.9095477386934674,
+            "Play J\u2663 to steal 7\u2666": 0.8946322067594433,
+            "Play 6\u2660 for points": 0.9562109025915997,
+            "Draw": 0.9591836734693877,
+            "Scuttle 7\u2666 with 9\u2663": 0.9027522935779817
+          },
+          "selected_move": "Draw",
+          "selected_visits": 1176,
+          "selected_win_rate": 0.9591836734693877,
+          "game_result": 1.0
+        },
+        {
+          "turn": 4,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "d6fd0565575a",
+          "legal_moves": [
+            "Play 9\u2663 for points",
+            "Play 8\u2665 for points",
+            "Play K\u2665 to reduce win threshold",
+            "Play J\u2663 to steal 7\u2666",
+            "Play 6\u2660 for points",
+            "Draw",
+            "Play 8\u2665 as Glasses (see opponent's hand)",
+            "Scuttle 7\u2666 with 8\u2665",
+            "Scuttle 7\u2666 with 9\u2663"
+          ],
+          "visit_counts": {
+            "Play 9\u2663 for points": 648,
+            "Play 8\u2665 for points": 685,
+            "Play K\u2665 to reduce win threshold": 752,
+            "Play J\u2663 to steal 7\u2666": 692,
+            "Play 6\u2660 for points": 796,
+            "Draw": 215,
+            "Play 8\u2665 as Glasses (see opponent's hand)": 339,
+            "Scuttle 7\u2666 with 8\u2665": 485,
+            "Scuttle 7\u2666 with 9\u2663": 388
+          },
+          "win_rates": {
+            "Play 9\u2663 for points": 0.9351851851851852,
+            "Play 8\u2665 for points": 0.9386861313868613,
+            "Play K\u2665 to reduce win threshold": 0.9468085106382979,
+            "Play J\u2663 to steal 7\u2666": 0.9393063583815029,
+            "Play 6\u2660 for points": 0.9510050251256281,
+            "Draw": 0.813953488372093,
+            "Play 8\u2665 as Glasses (see opponent's hand)": 0.8731563421828908,
+            "Scuttle 7\u2666 with 8\u2665": 0.9092783505154639,
+            "Scuttle 7\u2666 with 9\u2663": 0.8865979381443299
+          },
+          "selected_move": "Play 6\u2660 for points",
+          "selected_visits": 796,
+          "selected_win_rate": 0.9510050251256281,
+          "game_result": 1.0
+        },
+        {
+          "turn": 5,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "1de318be0dfc",
+          "legal_moves": [
+            "Scuttle 7\u2666 with 9\u2663",
+            "Scuttle 7\u2660 with 9\u2663",
+            "Scuttle 7\u2666 with 8\u2665",
+            "Scuttle 7\u2660 with 8\u2665",
+            "Play 9\u2663 for points",
+            "Play 8\u2665 for points",
+            "Play K\u2665 to reduce win threshold",
+            "Play J\u2663 to steal 7\u2666",
+            "Play J\u2663 to steal 7\u2660",
+            "Draw",
+            "Play 8\u2665 as Glasses (see opponent's hand)"
+          ],
+          "visit_counts": {
+            "Scuttle 7\u2666 with 9\u2663": 341,
+            "Scuttle 7\u2660 with 9\u2663": 316,
+            "Scuttle 7\u2666 with 8\u2665": 343,
+            "Scuttle 7\u2660 with 8\u2665": 377,
+            "Play 9\u2663 for points": 562,
+            "Play 8\u2665 for points": 622,
+            "Play K\u2665 to reduce win threshold": 536,
+            "Play J\u2663 to steal 7\u2666": 620,
+            "Play J\u2663 to steal 7\u2660": 593,
+            "Draw": 348,
+            "Play 8\u2665 as Glasses (see opponent's hand)": 342
+          },
+          "win_rates": {
+            "Scuttle 7\u2666 with 9\u2663": 0.9266862170087976,
+            "Scuttle 7\u2660 with 9\u2663": 0.9177215189873418,
+            "Scuttle 7\u2666 with 8\u2665": 0.9271137026239067,
+            "Scuttle 7\u2660 with 8\u2665": 0.9363395225464191,
+            "Play 9\u2663 for points": 0.9768683274021353,
+            "Play 8\u2665 for points": 0.9855305466237942,
+            "Play K\u2665 to reduce win threshold": 0.9720149253731343,
+            "Play J\u2663 to steal 7\u2666": 0.9838709677419355,
+            "Play J\u2663 to steal 7\u2660": 0.9814502529510961,
+            "Draw": 0.9281609195402298,
+            "Play 8\u2665 as Glasses (see opponent's hand)": 0.9269005847953217
+          },
+          "selected_move": "Play 8\u2665 for points",
+          "selected_visits": 622,
+          "selected_win_rate": 0.9855305466237942,
+          "game_result": 1.0
+        },
+        {
+          "turn": 6,
+          "player": 0,
+          "phase": "MAIN",
+          "state_hash": "f74711f6296e",
+          "legal_moves": [
+            "Play 9\u2663 for points",
+            "Scuttle 7\u2666 with 9\u2663",
+            "Scuttle 7\u2660 with 9\u2663",
+            "Play K\u2665 to reduce win threshold",
+            "Play J\u2663 to steal 7\u2666",
+            "Play J\u2663 to steal 7\u2660",
+            "Draw"
+          ],
+          "visit_counts": {
+            "Play 9\u2663 for points": 876,
+            "Scuttle 7\u2666 with 9\u2663": 468,
+            "Scuttle 7\u2660 with 9\u2663": 420,
+            "Play K\u2665 to reduce win threshold": 876,
+            "Play J\u2663 to steal 7\u2666": 876,
+            "Play J\u2663 to steal 7\u2660": 876,
+            "Draw": 608
+          },
+          "win_rates": {
+            "Play 9\u2663 for points": 1.0,
+            "Scuttle 7\u2666 with 9\u2663": 0.9465811965811965,
+            "Scuttle 7\u2660 with 9\u2663": 0.9357142857142857,
+            "Play K\u2665 to reduce win threshold": 1.0,
+            "Play J\u2663 to steal 7\u2666": 1.0,
+            "Play J\u2663 to steal 7\u2660": 1.0,
+            "Draw": 0.9720394736842105
+          },
+          "selected_move": "Play 9\u2663 for points",
+          "selected_visits": 876,
+          "selected_win_rate": 1.0,
+          "game_result": 1.0
+        }
+      ]
+    }
+  ]
+}

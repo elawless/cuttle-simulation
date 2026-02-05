@@ -9,6 +9,7 @@ A Python simulation of the card game Cuttle, with multiple AI strategies includi
 - `cuttle_engine/` - Core game logic (immutable states, move generation, execution)
 - `strategies/` - AI strategies (RandomStrategy, HeuristicStrategy, MCTSStrategy, LLMStrategy)
 - `simulation/` - Game runner and tournament infrastructure
+- `training/` - Parallel game runner and data collection for MCTS training
 - `web/` - Web UI (FastAPI backend + SvelteKit frontend)
 - `tests/` - 103 passing tests covering engine behavior
 
@@ -394,19 +395,33 @@ When even/ahead, Jack recovers both point-stealing ability and board presence.
 
 ### Key Strategic Insights
 
-1. **8s for points is MASSIVE** - 92% difference vs old heuristic
-2. **Never scuttle** - 1-for-1 trades don't advance win condition
-3. **Threes should revive** - 49% revive rate for high-value recovery
-4. **THREE targets: Jack > 10 > King** - Never revive 2, 3, or Queen
-5. **Sevens as one-off** - Deck play gives tempo advantage
-6. **Ignore opponent threats** - Racing beats reacting
-7. **Queens are overrated** - Only 3.2% of plays
+1. **8s for points is MASSIVE** - 99.3% points vs 0.7% glasses
+2. **Scuttle rarely** - 10.1% usage when available, +18.7% better to NOT scuttle
+3. **Threes revive 42% of time** - Priority: 10 > Jack > King > 9
+4. **Jack Steal is premium** - 79.5% win rate, one of the best plays
+5. **One-offs are overrated** - MCTS prefers points 60-70% for 4,5,7
+6. **Counter selectively** - Only 22% counter rate (mostly vs Ace/Five)
+7. **Queens are traps** - 45% win rate, correlates with weak positions
 
 ### Win Rate Results
 
 - MCTS vs Random: **99-100%**
 - MCTS vs Old Heuristic: **94.9%**
-- Updated Heuristic should perform close to MCTS
+- Updated Heuristic vs Random: **83%**
+
+## Comprehensive MCTS Analysis (Feb 2026)
+
+A detailed analysis of 1000 games (6139 moves) from MCTS(2000) vs Heuristic was performed.
+See `training_data/MCTS_ANALYSIS_SUMMARY.md` for full details.
+
+**Analysis script**: `scripts/analyze_mcts_comprehensive.py`
+
+**Key findings that led to heuristic updates**:
+- Jack Steal: 79.5% win rate - INCREASED scoring (400 base + 25*target)
+- Queen: 45% win rate - REDUCED scoring (100)
+- One-offs (4,5,7): MCTS prefers points 60-70% of time - REDUCED one-off scores
+- Draw: 58% win rate - REDUCED scoring (250)
+- Scuttle: 10% usage rate when available, +18.7% better to not scuttle
 
 ## Performance Notes
 
@@ -414,6 +429,100 @@ When even/ahead, Jack recovers both point-stealing ability and board presence.
 - For rapid testing, use MCTS(100-200)
 - RandomStrategy is very fast (~1ms per game)
 - Tournament of 100 games: Random ~100ms, MCTS(500) ~5-10 minutes
+
+## MCTS Parallelization
+
+### Root Parallel MCTS
+
+MCTSStrategy supports **root parallelization** via the `num_workers` parameter:
+
+```python
+from strategies.mcts import MCTSStrategy
+
+# Serial execution (default)
+mcts_serial = MCTSStrategy(iterations=1000, num_workers=1)
+
+# Parallel execution (4 workers)
+mcts_parallel = MCTSStrategy(iterations=1000, num_workers=4)
+```
+
+**How it works:**
+- Runs N independent MCTS trees in parallel using ProcessPoolExecutor
+- Each worker runs `iterations / num_workers` iterations
+- Results are aggregated by summing visit counts across all trees
+- Move with highest total visits is selected
+
+**Performance:**
+- Process startup overhead makes parallelism inefficient for low iterations (<500)
+- For 1000 iterations with 4 workers: ~1.7x speedup
+- Best used for higher iteration counts (1000+) where search time dominates
+
+**Web API:**
+- Exposed via `num_workers` parameter in strategy params:
+```json
+{"strategy": "mcts", "params": {"iterations": 1000, "num_workers": 4}}
+```
+
+## Training Data Collection
+
+### Parallel Game Runner
+
+The `training/` package provides tools for running many games in parallel to collect MCTS statistics for training.
+
+```python
+from training import ParallelGameRunner, DataCollector
+from pathlib import Path
+
+# Run 100 games in parallel
+runner = ParallelGameRunner(num_workers=4)
+game_data = runner.run_games_with_mcts_stats(
+    mcts_player=0,
+    opponent_strategy_name="heuristic",
+    num_games=100,
+    mcts_iterations=1000,
+)
+
+# Convert to structured training data
+collector = DataCollector(Path("training_data"))
+histories = [collector.collect_from_game_data(gd) for gd in game_data]
+collector.save_histories(histories, "mcts_vs_heuristic.json")
+```
+
+### Training CLI
+
+```bash
+# Run 100 games with MCTS vs Heuristic
+python scripts/train_with_mcts.py --games 100
+
+# Customize settings
+python scripts/train_with_mcts.py \
+    --games 100 \
+    --workers 8 \
+    --iterations 500 \
+    --opponent heuristic \
+    --output training_data
+```
+
+### Collected Data Format
+
+Each game collects per-move MCTS statistics:
+
+```json
+{
+  "turn": 1,
+  "phase": "MAIN",
+  "selected_move": "Play 10♠ for points",
+  "legal_moves": ["Draw", "Play 10♠ for points", ...],
+  "visit_counts": {"Draw": 45, "Play 10♠ for points": 312, ...},
+  "win_rates": {"Draw": 0.42, "Play 10♠ for points": 0.71, ...},
+  "game_result": 1.0  // 1.0 win, 0.0 loss, 0.5 draw
+}
+```
+
+This data can be used to:
+- Train policy networks (visit counts → policy targets)
+- Train value networks (game_result → value targets)
+- Analyze optimal play patterns
 
 ## Web UI
 

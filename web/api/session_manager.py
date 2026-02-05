@@ -569,6 +569,7 @@ class StrategyFactory:
                 return MCTSStrategy(
                     iterations=params.get("iterations", 1000),
                     exploration_constant=params.get("exploration", 1.414),
+                    num_workers=params.get("num_workers", 1),
                 )
 
             case "ismcts":
@@ -576,6 +577,7 @@ class StrategyFactory:
                 return ISMCTSStrategy(
                     iterations=params.get("iterations", 1000),
                     exploration_constant=params.get("exploration", 0.7),
+                    # ISMCTSStrategy may also support num_workers in future
                 )
 
             case s if s.startswith("llm-"):

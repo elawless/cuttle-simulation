@@ -155,6 +155,10 @@ class Card:
     def __hash__(self) -> int:
         return hash((self._rank, self._suit))
 
+    def __reduce__(self) -> tuple:
+        """Support pickling for multiprocessing."""
+        return (Card, (self._rank, self._suit))
+
     def __repr__(self) -> str:
         return f"Card({self._rank.name}, {self._suit.name})"
 

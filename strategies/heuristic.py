@@ -143,8 +143,8 @@ class HeuristicStrategy(Strategy):
 
                 elif card.rank == Rank.JACK and target:
                     # Jacks to steal high-value points
-                    # MCTS uses Jacks 13.3% when behind 8+ (vs 5.2% for Heuristic)
-                    base = 300 + target.point_value * 20
+                    # MCTS: 79.5% win rate - one of the best plays!
+                    base = 400 + target.point_value * 25  # Increased from 300 + 20
                     if is_behind_big:
                         return base + 200  # Bonus when behind
                     elif is_behind:
@@ -152,9 +152,9 @@ class HeuristicStrategy(Strategy):
                     return base
 
                 elif card.rank == Rank.QUEEN:
-                    # Queens are overrated - MCTS only plays 3.2% vs 6%
-                    # Protection < offense in a racing game
-                    return 150
+                    # Queens: 45% win rate - correlates with weaker positions
+                    # MCTS plays Queen when it has weak options
+                    return 100  # Reduced from 150
 
                 elif card.rank == Rank.EIGHT:
                     # 8 as Glasses is almost never correct
@@ -213,19 +213,20 @@ class HeuristicStrategy(Strategy):
                     return 50  # No good targets in scrap
 
                 elif effect == OneOffEffect.FOUR_DISCARD:
-                    # MCTS uses Four 81% in opening - tempo play!
+                    # MCTS uses Four for points 60% of time!
+                    # 41% win rate suggests one-off is often weak
                     if is_opening:
-                        return 450  # High priority early game
+                        return 350  # Reduced from 450
                     elif is_midgame:
-                        return 200
+                        return 150  # Reduced from 200
                     return 100  # Low priority lategame
 
                 elif effect == OneOffEffect.FIVE_DRAW_TWO:
-                    # MCTS uses Five 65% in opening - card advantage
+                    # MCTS prefers 5 for points 65.6% of time
                     if is_opening:
-                        return 400  # Build hand early
+                        return 300  # Reduced from 400
                     elif is_midgame:
-                        return 300
+                        return 200  # Reduced from 300
                     return 150  # Play for points lategame
 
                 elif effect == OneOffEffect.SIX_SCRAP_ALL_PERMANENTS:
@@ -238,11 +239,11 @@ class HeuristicStrategy(Strategy):
                     return 30  # Almost always play for 6 points
 
                 elif effect == OneOffEffect.SEVEN_PLAY_FROM_DECK:
-                    # MCTS uses Seven 70% in opening - tempo play
+                    # MCTS prefers 7 for points 68.8% of time
                     if is_opening:
-                        return 450  # High priority tempo
+                        return 350  # Reduced from 450
                     elif is_midgame:
-                        return 300
+                        return 250  # Reduced from 300
                     return 150  # Play for points lategame
 
                 return 100
@@ -285,9 +286,9 @@ class HeuristicStrategy(Strategy):
                 return 100
 
             case Draw():
-                # Drawing is valuable - MCTS draws 24% vs 19%
-                # Better than weak plays
-                return 300
+                # MCTS: 58% win rate - below average
+                # Draw is often a 'settle' option
+                return 250  # Reduced from 300
 
             case Pass():
                 return 0
@@ -323,8 +324,8 @@ class HeuristicStrategy(Strategy):
                     if card.rank == Rank.KING:
                         return 500
                     elif card.rank == Rank.JACK and target:
-                        return 300 + target.point_value * 20
-                    return 150
+                        return 400 + target.point_value * 25  # Match Jack steal scoring
+                    return 100  # Match Queen scoring
                 return 100
 
         return 0

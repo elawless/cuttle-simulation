@@ -1,0 +1,478 @@
+Analyzing 1000 games, 6139 moves
+MCTS wins: 876 (87.6%)
+
+================================================================================
+OVERALL MOVE TYPE DISTRIBUTION
+================================================================================
+Move Type               Count     Rate   Avg Win%   Avg Visits
+------------------------------------------------------------
+points                   2534    41.3%      75.9%          772
+draw                      864    14.1%      58.1%          741
+jack_steal                425     6.9%      79.5%          899
+king                      414     6.7%      70.2%          871
+decline_counter           392     6.4%      52.4%          139
+ace_oneoff                189     3.1%      58.2%         1041
+queen                     179     2.9%      45.2%          797
+scuttle                   169     2.8%      39.9%          690
+discard                   166     2.7%      73.2%          909
+four_discard              137     2.2%      41.0%          647
+seven_deck                128     2.1%      57.7%          838
+five_draw                 117     1.9%      48.7%          724
+three_revive              116     1.9%      56.1%          507
+counter                   109     1.8%      75.6%         1512
+seven_resolve_permanent       52     0.8%      66.1%         1583
+seven_resolve_points       50     0.8%      59.1%         1286
+two_destroy                40     0.7%      47.6%          797
+seven_resolve_oneoff       22     0.4%      46.2%         1359
+six_scrap                  18     0.3%      44.5%          663
+seven_resolve_scuttle        9     0.1%      50.2%          978
+nine_return                 6     0.1%      22.7%          432
+glasses                     3     0.0%      32.4%          528
+
+================================================================================
+POINT CARD USAGE (When Played for Points)
+================================================================================
+ Value    Count   Avg Win%    Opening    Midgame   Lategame
+------------------------------------------------------------
+    10      427      86.5%        227        162         38
+     9      374      82.3%        242        114         18
+     8      403      75.3%        277        102         24
+     7      282      82.1%        136        119         27
+     6      302      75.0%        157        127         18
+     5      223      70.7%        136         72         15
+     4      207      68.0%        137         56         14
+     3      162      59.3%        116         43          3
+     2       86      58.3%         42         34         10
+     1       68      58.6%         47         15          6
+
+================================================================================
+ONE-OFF USAGE
+================================================================================
+One-Off                    Count  Avg Win%   Open    Mid   Late
+-----------------------------------------------------------------
+Ace (Scrap All Points)       189     58.2%    139     47      3
+Two (Destroy Permanent)       40     47.6%     24     12      4
+Three (Revive)               116     56.1%     46     59     11
+Four (Force Discard)         137     41.0%    102     31      4
+Five (Draw Two)              117     48.7%     83     26      8
+Six (Scrap Permanents)        18     44.5%      7      8      3
+Seven (Play from Deck)       128     57.7%     93     32      3
+Nine (Return to Hand)          6     22.7%      2      4      0
+
+================================================================================
+PERMANENT CARD USAGE
+================================================================================
+Permanent               Count   Avg Win%    Opening    Midgame   Lategame
+----------------------------------------------------------------------
+King (Threshold)          414      70.2%        259        120         35
+Queen (Protection)        179      45.2%        129         43          7
+8 as Glasses                3      32.4%          2          1          0
+Jack (Steal)              425      79.5%        272        118         35
+
+Jack Steal Targets:
+  Target Value  Count  Avg Win%
+            10    157     77.5%
+             9    105     78.0%
+             8     60     78.8%
+             7     51     81.6%
+             6     31     90.6%
+             5     20     84.3%
+             4      1     41.5%
+
+================================================================================
+COUNTER DECISIONS
+================================================================================
+Counter:    109 (21.8%) - Avg Win%: 75.6%
+Decline:    392 (78.2%) - Avg Win%: 52.4%
+
+================================================================================
+THREE (REVIVE) TARGET ANALYSIS
+================================================================================
+  Target  Count     Rate   Avg Win%
+-----------------------------------
+       J     27    23.3%      52.9%
+      10     29    25.0%      54.5%
+       K     15    12.9%      55.3%
+       9     14    12.1%      60.3%
+       8      5     4.3%      53.0%
+       7     10     8.6%      67.2%
+       6      1     0.9%      71.0%
+       5      3     2.6%      94.7%
+       4      2     1.7%      28.2%
+       2      2     1.7%      75.7%
+       A      8     6.9%      40.2%
+
+================================================================================
+SCUTTLE ANALYSIS
+================================================================================
+Total scuttles: 169 (2.75% of moves)
+Average win rate when scuttling: 39.9%
+
+Scuttle Patterns (Attacker → Target):
+     Pattern  Count   Avg Win%
+   10 → 9       20      34.4%
+    8 → 7       16      46.9%
+    6 → 5       15      48.5%
+    9 → 8       15      41.4%
+   10 → 10      14      31.6%
+   10 → 8       14      34.9%
+    9 → 9       12      40.2%
+    7 → 7        9      48.2%
+    9 → 6        8      36.4%
+   10 → 7        8      46.9%
+    8 → 8        7      37.4%
+    9 → 7        6      34.0%
+    7 → 6        5      29.7%
+    6 → 6        4      51.0%
+   10 → 6        3      30.1%
+
+SCUTTLE DECISION ANALYSIS:
+  Scuttle available: 1667 times
+  MCTS chose scuttle: 169 (10.1%)
+  MCTS declined scuttle: 1498 (89.9%)
+
+  When MCTS declined scuttle, it chose:
+    points: 986 times
+    draw: 143 times
+    jack_steal: 104 times
+    ace_oneoff: 77 times
+    king: 51 times
+
+  Win rate comparison (declined scuttles):
+    Avg win rate of selected move: 79.5%
+    Avg win rate of best scuttle: 60.8%
+    Difference: +18.7% for non-scuttle
+
+================================================================================
+DRAW ANALYSIS
+================================================================================
+Total draws: 864 (14.1% of moves)
+Average win rate when drawing: 58.1%
+
+Draw by Game Stage:
+  Stage       Count   Avg Win%
+  opening       259      51.6%
+  midgame       456      61.6%
+  lategame      149      58.9%
+
+================================================================================
+MOVE DISTRIBUTION BY GAME STAGE
+================================================================================
+
+OPENING (Turns 1-3)
+--------------------------------------------------
+  Move Type             Count     Rate   Avg Win%
+  points                 1517    42.9%      67.9%
+  jack_steal              272     7.7%      77.4%
+  king                    259     7.3%      62.1%
+  draw                    259     7.3%      51.6%
+  decline_counter         202     5.7%      52.2%
+  discard                 166     4.7%      73.2%
+  ace_oneoff              139     3.9%      56.8%
+  queen                   129     3.6%      42.0%
+  four_discard            102     2.9%      36.0%
+  seven_deck               93     2.6%      55.2%
+
+MIDGAME (Turns 4-8)
+--------------------------------------------------
+  Move Type             Count     Rate   Avg Win%
+  points                  844    39.9%      87.2%
+  draw                    456    21.6%      61.6%
+  decline_counter         164     7.8%      52.9%
+  king                    120     5.7%      86.1%
+  jack_steal              118     5.6%      83.1%
+  scuttle                  89     4.2%      40.3%
+  three_revive             59     2.8%      58.3%
+  ace_oneoff               47     2.2%      61.2%
+  queen                    43     2.0%      52.9%
+  seven_deck               32     1.5%      64.1%
+
+LATEGAME (Turns 9+)
+--------------------------------------------------
+  Move Type             Count     Rate   Avg Win%
+  points                  173    35.7%      90.7%
+  draw                    149    30.7%      58.9%
+  jack_steal               35     7.2%      83.7%
+  king                     35     7.2%      75.9%
+  decline_counter          26     5.4%      50.4%
+  scuttle                  14     2.9%      37.7%
+  three_revive             11     2.3%      79.3%
+  five_draw                 8     1.6%      70.8%
+  queen                     7     1.4%      56.4%
+  counter                   5     1.0%      92.0%
+
+================================================================================
+CARD-LEVEL ACTION ANALYSIS
+(When card X is played, what action does MCTS choose?)
+================================================================================
+
+A Card:
+  points         :    68 ( 26.5%) - Avg Win%: 58.6%
+  ace_oneoff     :   189 ( 73.5%) - Avg Win%: 58.2%
+
+2 Card:
+  points         :    86 ( 68.3%) - Avg Win%: 58.3%
+  two_destroy    :    40 ( 31.7%) - Avg Win%: 47.6%
+
+3 Card:
+  points         :   162 ( 58.3%) - Avg Win%: 59.3%
+  three_revive   :   116 ( 41.7%) - Avg Win%: 56.1%
+
+4 Card:
+  points         :   207 ( 60.2%) - Avg Win%: 68.0%
+  four_discard   :   137 ( 39.8%) - Avg Win%: 41.0%
+
+5 Card:
+  points         :   223 ( 65.6%) - Avg Win%: 70.7%
+  five_draw      :   117 ( 34.4%) - Avg Win%: 48.7%
+
+6 Card:
+  points         :   302 ( 94.4%) - Avg Win%: 75.0%
+  six_scrap      :    18 (  5.6%) - Avg Win%: 44.5%
+
+7 Card:
+  points         :   282 ( 68.8%) - Avg Win%: 82.1%
+  seven_deck     :   128 ( 31.2%) - Avg Win%: 57.7%
+
+8 Card:
+  points         :   403 ( 99.3%) - Avg Win%: 75.3%
+  glasses        :     3 (  0.7%) - Avg Win%: 32.4%
+
+9 Card:
+  points         :   374 ( 98.4%) - Avg Win%: 82.3%
+  nine_return    :     6 (  1.6%) - Avg Win%: 22.7%
+
+J Card:
+  jack_steal     :   425 (100.0%) - Avg Win%: 79.5%
+
+Q Card:
+  queen          :   179 (100.0%) - Avg Win%: 45.2%
+
+K Card:
+  king           :   414 (100.0%) - Avg Win%: 70.2%
+
+================================================================================
+DETAILED HEURISTIC SCORING RECOMMENDATIONS
+================================================================================
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ 1. POINT CARD PRIORITIES                                                     ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Current heuristic scoring:
+  - High (8-10): 800 + value*10  (880-900)
+  - Mid (5-7):   400 + value*10  (450-470)
+  - Low (2-4):   200 + value*10  (220-240)
+
+MCTS point card win rates by value:
+  10:  86.5% win rate,  427 plays
+   9:  82.3% win rate,  374 plays
+   8:  75.3% win rate,  403 plays
+   7:  82.1% win rate,  282 plays
+   6:  75.0% win rate,  302 plays
+   5:  70.7% win rate,  223 plays
+   4:  68.0% win rate,  207 plays
+   3:  59.3% win rate,  162 plays
+   2:  58.3% win rate,   86 plays
+   1:  58.6% win rate,   68 plays
+
+RECOMMENDATION: Current scoring is well-aligned with MCTS behavior.
+  - High cards (8-10) have best win rates (75-87%)
+  - Priority order 10 > 9 > 8 > 7 > 6 > 5 > 4 > 3 > 2 > A is correct
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ 2. ONE-OFF USAGE PATTERNS                                                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+ACE (Scrap All Points):
+  Total Ace plays: 257
+  As one-off: 189 (73.5%)
+  As points:  68 (26.5%)
+  Opening one-offs: 139 (74% of one-offs)
+  Avg win rate when using one-off: 58.2%
+
+  RECOMMENDATION:
+    - Current: 700 opening, 500 midgame (only when behind 8+)
+    - MCTS uses Ace one-off 73.5% of time (mostly opening)
+    - Keep current context-sensitive scoring (behind check is critical)
+
+FOUR (Force Discard):
+  As one-off: 137 (39.8%)
+  As points:  207 (60.2%)
+  Opening: 102 (74% of one-offs)
+  Win rate: 41.0%
+
+  RECOMMENDATION:
+    - Current: 450 opening, 200 midgame, 100 lategame
+    - MCTS uses Four for points 60% of time!
+    - LOWER one-off score: 350 opening, 150 midgame
+    - The 41% win rate suggests it's often a weak play
+
+FIVE (Draw Two):
+  As one-off: 117 (34.4%)
+  As points:  223 (65.6%)
+  Opening: 83 (71% of one-offs)
+  Win rate: 48.7%
+
+  RECOMMENDATION:
+    - Current: 400 opening, 300 midgame
+    - MCTS prefers 5 for points 65.6% of time
+    - LOWER one-off score: 300 opening, 200 midgame
+
+SEVEN (Play from Deck):
+  As one-off: 128 (31.2%)
+  As points:  282 (68.8%)
+  Opening: 93 (73% of one-offs)
+  Win rate: 57.7%
+
+  RECOMMENDATION:
+    - Current: 450 opening, 300 midgame
+    - MCTS prefers 7 for points 68.8% of time
+    - LOWER one-off score: 350 opening, 250 midgame
+
+THREE (Revive):
+  As revive:  116 (41.7%)
+  As points:  162 (58.3%)
+  Win rate: 56.1%
+
+  Revive target priorities (from data):
+    10:  29 ( 25.0%) - 54.5% win rate
+     J:  27 ( 23.3%) - 52.9% win rate
+     K:  15 ( 12.9%) - 55.3% win rate
+     9:  14 ( 12.1%) - 60.3% win rate
+     8:   5 (  4.3%) - 53.0% win rate
+     7:  10 (  8.6%) - 67.2% win rate
+
+  RECOMMENDATION:
+    - Current revive scoring (Jack > 10 > King > 9 > 8) is correct
+    - Consider: MCTS uses points 58% of time - lower revive scores slightly
+
+SIX (Scrap All Permanents):
+  As one-off: 18 (5.6%)
+  As points:  302 (94.4%)
+  Win rate: 44.5%
+
+  RECOMMENDATION:
+    - Current: 30 (almost never use)
+    - MCTS agrees: 94.4% for points, only 5.6% one-off
+    - KEEP current low scoring
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ 3. PERMANENT CARDS                                                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+KING (Threshold Reduction):
+  Uses: 414 (6.7% of moves)
+  Win rate: 70.2%
+  Current score: 600
+  RECOMMENDATION: Score is appropriate (70% win rate)
+
+QUEEN (Protection):
+  Uses: 179 (2.9% of moves)
+  Win rate: 45.2%
+  Current score: 150
+  RECOMMENDATION:
+    - 45% win rate is LOW - Queens correlate with losing
+    - MCTS plays Queen when it has weak options
+    - LOWER score to 100 (or keep 150 as a 'last resort')
+
+JACK (Steal):
+  Uses: 425 (6.9% of moves)
+  Win rate: 79.5%
+  Current score: 300 + target_value*20 (+ bonuses when behind)
+
+  Target distribution:
+    10: 157 steals, 77.5% win rate
+     9: 105 steals, 78.0% win rate
+     8:  60 steals, 78.8% win rate
+     7:  51 steals, 81.6% win rate
+     6:  31 steals, 90.6% win rate
+     5:  20 steals, 84.3% win rate
+
+  RECOMMENDATION:
+    - 79.5% win rate is EXCELLENT
+    - Jack steal is one of the best plays available
+    - INCREASE base score: 400 + target_value*25
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ 4. SCUTTLE DECISIONS                                                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Scuttle opportunities: 1667
+  MCTS scuttled: 169 (10.1%)
+  MCTS declined: 1498 (89.9%)
+
+  When declining scuttle:
+    Avg selected move win rate: 79.5%
+    Avg scuttle win rate:       60.8%
+    Difference: +18.7%
+
+  RECOMMENDATION:
+    - Current: Base 20 + value_diff (very low)
+    - MCTS confirms: scuttle is almost never correct
+    - KEEP current low scoring
+    - Exception: Check for opponent near win (5000 score already)
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ 5. DRAW DECISION                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Draw usage: 864 (14.1% of moves)
+Win rate: 58.1%
+
+By game stage:
+     opening:  259 draws, 51.6% win rate
+     midgame:  456 draws, 61.6% win rate
+    lategame:  149 draws, 58.9% win rate
+
+  RECOMMENDATION:
+    - Current: 300
+    - 58% win rate is below average - Draw is often a 'settle' option
+    - MCTS draws heavily in midgame (21.6%) looking for better options
+    - Consider LOWERING to 250 to prefer points over draw
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ 6. COUNTER DECISIONS                                                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Counter opportunities: 501
+  Counter: 109 (21.8%) - 75.6% win rate
+  Decline: 392 (78.2%) - 52.4% win rate
+
+  RECOMMENDATION:
+    - Current: Counter Ace=400, Five=350, Four=100, Two=80
+    - MCTS only counters 22% of the time
+    - Counter win rate (75.6%) > Decline (52.4%)
+    - But MCTS still declines 78% - context matters!
+    - KEEP current selective counter strategy
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ SUMMARY OF RECOMMENDED CHANGES                                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+1. FOUR one-off: REDUCE 450->350 opening, 200->150 midgame
+   Reason: MCTS uses points 60% of time, 41% win rate when one-off
+
+2. FIVE one-off: REDUCE 400->300 opening, 300->200 midgame
+   Reason: MCTS uses points 65.6% of time
+
+3. SEVEN one-off: REDUCE 450->350 opening, 300->250 midgame
+   Reason: MCTS uses points 68.8% of time
+
+4. QUEEN: REDUCE 150->100
+   Reason: 45% win rate - correlates with weaker positions
+
+5. JACK steal: INCREASE 300->400 base, 20->25 per target value
+   Reason: 79.5% win rate - one of the best plays
+
+6. DRAW: REDUCE 300->250
+   Reason: 58% win rate - should prefer point plays
+
+7. KEEP UNCHANGED:
+   - Point card scoring (aligned with MCTS)
+   - Scuttle scoring (MCTS confirms rarely correct)
+   - Six one-off scoring (94% for points)
+   - Counter decision thresholds (selective countering correct)
+   - Ace one-off (context-sensitive scoring working)
+   - King scoring (70% win rate appropriate)
+
