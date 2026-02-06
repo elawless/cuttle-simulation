@@ -60,3 +60,12 @@ node_modules/
 .svelte-kit/
 .vercel/
 .netlify/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# Training checkpoints and data
+checkpoints/
+training_data/

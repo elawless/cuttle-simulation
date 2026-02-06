@@ -3,10 +3,10 @@
  */
 
 import { writable, derived, get } from 'svelte/store';
-import type { GameState, Move, MoveRecord } from '$lib/types';
+import type { GameState, Move, MoveRecord, EloUpdates } from '$lib/types';
 
-// API base URL
-const API_BASE = '/api';
+// API base URL - use environment variable in production
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 // Game state
 export const gameState = writable<GameState | null>(null);
@@ -21,6 +21,9 @@ export const aiThinking = writable<{ player: number; strategy: string } | null>(
 // Playback controls for observer mode
 export const isPaused = writable<boolean>(true);
 export const playbackSpeed = writable<number>(500);
+
+// ELO tracking
+export const eloUpdates = writable<EloUpdates | null>(null);
 
 // WebSocket connection
 let ws: WebSocket | null = null;
@@ -57,10 +60,13 @@ export async function createGame(
 	player1Strategy: string | null,
 	seed?: number,
 	handLimit?: number | null,
-	watchMode?: boolean
+	watchMode?: boolean,
+	player0Username?: string | null,
+	player1Username?: string | null
 ): Promise<string> {
 	isLoading.set(true);
 	error.set(null);
+	eloUpdates.set(null);
 
 	try {
 		const response = await fetch(`${API_BASE}/games`, {
@@ -69,11 +75,13 @@ export async function createGame(
 			body: JSON.stringify({
 				player0: {
 					player_type: player0Type,
-					strategy: player0Strategy
+					strategy: player0Strategy,
+					username: player0Username
 				},
 				player1: {
 					player_type: player1Type,
-					strategy: player1Strategy
+					strategy: player1Strategy,
+					username: player1Username
 				},
 				seed,
 				hand_limit: handLimit,
@@ -167,15 +175,21 @@ export function connectWebSocket(gameId: string, viewer: number = 0, watch: bool
 	const watchParam = watch ? '&watch=true' : '';
 	const speedParam = initialSpeed ? `&speed=${initialSpeed}` : '';
 
-	// In development, connect directly to backend; in production, use relative path
-	const isDev = window.location.port === '5173';
+	// Determine WebSocket URL based on environment
+	const apiBase = import.meta.env.VITE_API_URL || '';
+	const isDevLocal = window.location.port === '5173' && !apiBase;
 	let wsUrl: string;
 
-	if (isDev) {
-		// Development: connect directly to backend on port 8000
+	if (isDevLocal) {
+		// Local development: connect directly to backend on port 8000
 		wsUrl = `ws://localhost:8000/api/ws/game/${gameId}?viewer=${viewer}${watchParam}${speedParam}`;
+	} else if (apiBase) {
+		// Production with explicit API URL: derive WebSocket URL from it
+		const wsProtocol = apiBase.startsWith('https') ? 'wss:' : 'ws:';
+		const apiHost = apiBase.replace(/^https?:\/\//, '').replace(/\/api$/, '');
+		wsUrl = `${wsProtocol}//${apiHost}/api/ws/game/${gameId}?viewer=${viewer}${watchParam}${speedParam}`;
 	} else {
-		// Production: use same host
+		// Production: use same host (for reverse proxy setups)
 		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 		wsUrl = `${protocol}//${window.location.host}/api/ws/game/${gameId}?viewer=${viewer}${watchParam}${speedParam}`;
 	}
@@ -233,6 +247,13 @@ export function connectWebSocket(gameId: string, viewer: number = 0, watch: bool
 
 				case 'legal_moves':
 					legalMoves.set(data.moves || []);
+					break;
+
+				case 'game_over':
+					// Game ended - store ELO updates
+					if (data.elo_updates) {
+						eloUpdates.set(data.elo_updates);
+					}
 					break;
 
 				case 'error':
@@ -300,6 +321,7 @@ export function resetGame(): void {
 	isLoading.set(false);
 	isPaused.set(true);
 	playbackSpeed.set(500);
+	eloUpdates.set(null);
 	disconnectWebSocket();
 }
 

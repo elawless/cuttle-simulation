@@ -13,7 +13,8 @@
 		error,
 		moveHistory,
 		playbackSpeed,
-		sendSetSpeed
+		sendSetSpeed,
+		eloUpdates
 	} from '$lib/stores/gameStore';
 
 	$: gameId = $page.params.id;
@@ -88,7 +89,7 @@
 							{#if isWatch}
 								Player {$gameState.winner + 1} Wins!
 							{:else}
-								{$gameState.winner === viewer ? '🎉 You Won!' : '😔 AI Won'}
+								{$gameState.winner === viewer ? 'You Won!' : 'AI Won'}
 							{/if}
 						</h2>
 						<p class="win-reason">
@@ -110,6 +111,32 @@
 								<span class="value">{$gameState.players[1 - viewer].point_total} pts</span>
 							</div>
 						</div>
+
+						{#if $eloUpdates}
+							{@const myElo = viewer === 0 ? $eloUpdates.player0 : $eloUpdates.player1}
+							{@const oppElo = viewer === 0 ? $eloUpdates.player1 : $eloUpdates.player0}
+							<div class="elo-updates">
+								<div class="elo-change" class:positive={myElo.change > 0} class:negative={myElo.change < 0}>
+									<span class="elo-label">{isWatch ? 'P1' : 'Your'} Rating</span>
+									<span class="elo-value">
+										{Math.round(myElo.new_rating)}
+										<span class="elo-delta">
+											{myElo.change >= 0 ? '+' : ''}{Math.round(myElo.change)}
+										</span>
+									</span>
+								</div>
+								<div class="elo-change" class:positive={oppElo.change > 0} class:negative={oppElo.change < 0}>
+									<span class="elo-label">{isWatch ? 'P2' : 'Opponent'} Rating</span>
+									<span class="elo-value">
+										{Math.round(oppElo.new_rating)}
+										<span class="elo-delta">
+											{oppElo.change >= 0 ? '+' : ''}{Math.round(oppElo.change)}
+										</span>
+									</span>
+								</div>
+							</div>
+						{/if}
+
 						<div class="modal-actions">
 							<button class="btn primary" on:click={handlePlayAgain}>
 								{isWatch ? 'Watch Another' : 'Play Again'}
@@ -302,7 +329,7 @@
 		display: flex;
 		justify-content: center;
 		gap: 32px;
-		margin-bottom: 24px;
+		margin-bottom: 16px;
 	}
 
 	.score {
@@ -320,6 +347,54 @@
 		font-size: 24px;
 		font-weight: 700;
 		color: white;
+	}
+
+	.elo-updates {
+		display: flex;
+		justify-content: center;
+		gap: 24px;
+		margin-bottom: 24px;
+		padding: 16px;
+		background: rgba(0, 0, 0, 0.2);
+		border-radius: 8px;
+	}
+
+	.elo-change {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.elo-label {
+		font-size: 12px;
+		color: #64748b;
+	}
+
+	.elo-value {
+		font-size: 16px;
+		font-weight: 600;
+		color: #e2e8f0;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.elo-delta {
+		font-size: 14px;
+		font-weight: 700;
+		padding: 2px 6px;
+		border-radius: 4px;
+	}
+
+	.elo-change.positive .elo-delta {
+		color: #22c55e;
+		background: rgba(34, 197, 94, 0.2);
+	}
+
+	.elo-change.negative .elo-delta {
+		color: #ef4444;
+		background: rgba(239, 68, 68, 0.2);
 	}
 
 	.modal-actions {

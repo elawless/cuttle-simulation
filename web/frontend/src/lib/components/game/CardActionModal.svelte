@@ -12,17 +12,24 @@
 		if (card.rank === 11 && move.target) {
 			return '🎯';
 		}
-		// 3 one-off (revive) with target
-		if (card.rank === 3 && move.type === 'PLAY_ONE_OFF' && move.target) {
+		// 3 one-off (revive) with target - both PLAY_ONE_OFF and RESOLVE_SEVEN
+		if (card.rank === 3 && (move.type === 'PLAY_ONE_OFF' || move.play_as === 'PLAY_ONE_OFF') && move.target) {
 			return '♻️';
 		}
 		// 2 one-off (destroy permanent) with target
-		if (card.rank === 2 && move.type === 'PLAY_ONE_OFF' && move.target) {
+		if (card.rank === 2 && (move.type === 'PLAY_ONE_OFF' || move.play_as === 'PLAY_ONE_OFF') && move.target) {
 			return '💥';
 		}
 		// 9 one-off (return to hand) with target
-		if (card.rank === 9 && move.type === 'PLAY_ONE_OFF' && move.target) {
+		if (card.rank === 9 && (move.type === 'PLAY_ONE_OFF' || move.play_as === 'PLAY_ONE_OFF') && move.target) {
 			return '↩️';
+		}
+		// RESOLVE_SEVEN moves
+		if (move.type === 'RESOLVE_SEVEN') {
+			if (move.play_as === 'PLAY_POINTS') return '💎';
+			if (move.play_as === 'PLAY_ONE_OFF') return '✨';
+			if (move.play_as === 'PLAY_PERMANENT') return '🏰';
+			if (move.play_as === 'SCUTTLE') return '⚔️';
 		}
 		switch (move.type) {
 			case 'PLAY_POINTS':
@@ -43,21 +50,28 @@
 		if (card.rank === 11 && move.target) {
 			return `Steal ${move.target.rank_symbol}${move.target.suit_symbol}`;
 		}
-		// Scuttle moves - show target
-		if (move.type === 'SCUTTLE' && move.target) {
+		// Scuttle moves - show target (both regular and RESOLVE_SEVEN)
+		if ((move.type === 'SCUTTLE' || move.play_as === 'SCUTTLE') && move.target) {
 			return `Scuttle ${move.target.rank_symbol}${move.target.suit_symbol}`;
 		}
-		// 3 one-off (revive) - show target card being revived
-		if (card.rank === 3 && move.type === 'PLAY_ONE_OFF' && move.target) {
+		// 3 one-off (revive) - show target card being revived (both PLAY_ONE_OFF and RESOLVE_SEVEN)
+		if (card.rank === 3 && (move.type === 'PLAY_ONE_OFF' || move.play_as === 'PLAY_ONE_OFF') && move.target) {
 			return `Revive ${move.target.rank_symbol}${move.target.suit_symbol}`;
 		}
 		// 2 one-off (destroy permanent) - show target
-		if (card.rank === 2 && move.type === 'PLAY_ONE_OFF' && move.target) {
+		if (card.rank === 2 && (move.type === 'PLAY_ONE_OFF' || move.play_as === 'PLAY_ONE_OFF') && move.target) {
 			return `Destroy ${move.target.rank_symbol}${move.target.suit_symbol}`;
 		}
 		// 9 one-off (return to hand) - show target
-		if (card.rank === 9 && move.type === 'PLAY_ONE_OFF' && move.target) {
+		if (card.rank === 9 && (move.type === 'PLAY_ONE_OFF' || move.play_as === 'PLAY_ONE_OFF') && move.target) {
 			return `Return ${move.target.rank_symbol}${move.target.suit_symbol}`;
+		}
+		// RESOLVE_SEVEN moves
+		if (move.type === 'RESOLVE_SEVEN') {
+			if (move.play_as === 'PLAY_POINTS') return 'Points';
+			if (move.play_as === 'PLAY_ONE_OFF') return 'One-Off';
+			if (move.play_as === 'PLAY_PERMANENT') return 'Permanent';
+			if (move.play_as === 'SCUTTLE') return 'Scuttle';
 		}
 		switch (move.type) {
 			case 'PLAY_POINTS':
@@ -78,17 +92,27 @@
 		if (card.rank === 11 && move.target) {
 			return `Steal opponent's ${move.target.rank_name} of ${move.target.suit_name} (${move.target.point_value} pts)`;
 		}
-		// 3 one-off (revive) - show target card details
-		if (card.rank === 3 && move.type === 'PLAY_ONE_OFF' && move.target) {
+		// Scuttle moves - show target (both regular and RESOLVE_SEVEN)
+		if ((move.type === 'SCUTTLE' || move.play_as === 'SCUTTLE') && move.target) {
+			return `Destroy opponent's ${move.target.rank_name} of ${move.target.suit_name}`;
+		}
+		// 3 one-off (revive) - show target card details (both PLAY_ONE_OFF and RESOLVE_SEVEN)
+		if (card.rank === 3 && (move.type === 'PLAY_ONE_OFF' || move.play_as === 'PLAY_ONE_OFF') && move.target) {
 			return `Revive ${move.target.rank_name} of ${move.target.suit_name} from scrap`;
 		}
 		// 2 one-off (destroy permanent) - show target
-		if (card.rank === 2 && move.type === 'PLAY_ONE_OFF' && move.target) {
+		if (card.rank === 2 && (move.type === 'PLAY_ONE_OFF' || move.play_as === 'PLAY_ONE_OFF') && move.target) {
 			return `Destroy opponent's ${move.target.rank_name} of ${move.target.suit_name}`;
 		}
 		// 9 one-off (return to hand) - show target
-		if (card.rank === 9 && move.type === 'PLAY_ONE_OFF' && move.target) {
+		if (card.rank === 9 && (move.type === 'PLAY_ONE_OFF' || move.play_as === 'PLAY_ONE_OFF') && move.target) {
 			return `Return ${move.target.rank_name} of ${move.target.suit_name} to opponent's hand`;
+		}
+		// RESOLVE_SEVEN moves
+		if (move.type === 'RESOLVE_SEVEN') {
+			if (move.play_as === 'PLAY_POINTS') return `Add ${card.point_value} points to your field`;
+			if (move.play_as === 'PLAY_ONE_OFF') return getOneOffEffect(card.rank);
+			if (move.play_as === 'PLAY_PERMANENT') return getPermanentEffect(card.rank);
 		}
 		switch (move.type) {
 			case 'PLAY_POINTS':

@@ -30,6 +30,7 @@ class PlayerConfigRequest(BaseModel):
     strategy_params: dict[str, Any] = Field(
         default_factory=dict, description="Strategy parameters"
     )
+    username: str | None = Field(None, description="Username for human players (for ELO tracking)")
 
 
 class CreateGameRequest(BaseModel):
@@ -90,6 +91,18 @@ async def list_strategies():
     return [StrategyInfo(name=name, description=desc) for name, desc in strategies.items()]
 
 
+@router.get("/debug/db-status")
+async def debug_db_status():
+    """Debug endpoint to check database configuration status."""
+    return {
+        "session_manager_id": id(session_manager),
+        "db_configured": session_manager._db is not None,
+        "elo_manager_configured": session_manager._elo_manager is not None,
+        "player_repo_configured": session_manager._player_repo is not None,
+        "game_repo_configured": session_manager._game_repo is not None,
+    }
+
+
 @router.post("/games", response_model=dict)
 async def create_game(request: CreateGameRequest):
     """Create a new game session."""
@@ -99,6 +112,7 @@ async def create_game(request: CreateGameRequest):
             player_type=PlayerType(req.player_type),
             strategy_name=req.strategy,
             strategy_params=req.strategy_params,
+            username=req.username,
         )
 
     try:
@@ -248,6 +262,83 @@ async def get_replay(game_id: str):
     raise HTTPException(status_code=404, detail="Replay not found")
 
 
+@router.get("/leaderboard")
+async def get_leaderboard(pool: str = "web", limit: int = 20):
+    """Get the ELO leaderboard.
+
+    Args:
+        pool: Rating pool to query ('web', 'all', 'llm-only', 'mcts-only')
+        limit: Maximum number of entries to return (default 20)
+
+    Returns:
+        Leaderboard entries sorted by rating descending.
+    """
+    if session_manager._elo_manager is None:
+        return {"pool": pool, "entries": [], "message": "ELO tracking not configured"}
+
+    entries = session_manager._elo_manager.get_leaderboard(pool, limit)
+    return {
+        "pool": pool,
+        "entries": [
+            {
+                "rank": entry.rank,
+                "player_id": entry.player_id,
+                "display_name": entry.display_name,
+                "provider": entry.provider,
+                "model_name": entry.model_name,
+                "rating": round(entry.rating, 1),
+                "games_played": entry.games_played,
+                "is_human": entry.provider == "human",
+            }
+            for entry in entries
+        ],
+    }
+
+
+@router.get("/players/{player_id}")
+async def get_player(player_id: str, pool: str = "web"):
+    """Get player profile and stats.
+
+    Args:
+        player_id: The player's unique ID.
+        pool: Rating pool to query.
+
+    Returns:
+        Player info including rating and games played.
+    """
+    if session_manager._player_repo is None:
+        raise HTTPException(status_code=503, detail="Player tracking not configured")
+
+    player = session_manager._player_repo.get(player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    rating = 1500.0
+    games_played = 0
+    rating_history = []
+
+    if session_manager._elo_manager:
+        rating = session_manager._elo_manager.get_rating(player_id, pool)
+        games_played = session_manager._elo_manager.get_games_played(player_id, pool)
+        history = session_manager._elo_manager.get_rating_history(player_id, pool, limit=50)
+        rating_history = [
+            {"timestamp": ts.isoformat(), "rating": round(r, 1), "games": g}
+            for ts, r, g in history
+        ]
+
+    return {
+        "player_id": player.id,
+        "display_name": player.display_name or player.model_name,
+        "provider": player.provider,
+        "model_name": player.model_name,
+        "is_human": player.provider == "human",
+        "rating": round(rating, 1),
+        "games_played": games_played,
+        "rating_history": rating_history,
+        "created_at": player.created_at.isoformat() if player.created_at else None,
+    }
+
+
 # WebSocket endpoint for real-time game play
 
 
@@ -288,6 +379,43 @@ class ConnectionManager:
 ws_manager = ConnectionManager()
 
 
+async def check_and_finalize_game(session: GameSession, websocket: WebSocket):
+    """Check if game is over and send game_over message with ELO updates.
+
+    Returns True if game is over and was finalized.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+
+    if not session.state.is_game_over:
+        return False
+
+    # Only finalize once (check if already finalized by checking if we have elo_updates in history)
+    if hasattr(session, '_finalized') and session._finalized:
+        return True
+
+    logger.info(f"Finalizing game {session.id}, winner={session.state.winner}")
+    logger.info(f"  Session manager ID: {id(session_manager)}")
+    logger.info(f"  DB configured: {session_manager._db is not None}")
+    logger.info(f"  Player identities: {session.player_identities}")
+
+    # Finalize game and get ELO updates
+    elo_updates = session_manager.finalize_game(session)
+    session._finalized = True
+
+    logger.info(f"  ELO updates: {elo_updates}")
+
+    # Send game_over message
+    await websocket.send_json({
+        "type": "game_over",
+        "winner": session.state.winner,
+        "win_reason": session.state.win_reason.name if session.state.win_reason else None,
+        "elo_updates": elo_updates,
+    })
+
+    return True
+
+
 @router.websocket("/ws/game/{game_id}")
 async def game_websocket(websocket: WebSocket, game_id: str):
     """WebSocket endpoint for real-time game updates.
@@ -298,6 +426,7 @@ async def game_websocket(websocket: WebSocket, game_id: str):
         - legal_moves: Available moves for current player
         - move_made: A move was executed
         - playback_state: Pause/speed state for observer mode
+        - game_over: Game ended with winner and ELO updates
         - error: Error message
 
     Client -> Server messages:
@@ -427,6 +556,9 @@ async def game_websocket(websocket: WebSocket, game_id: str):
                             "move": session.move_history[-1],
                         })
 
+                        # Check if game ended
+                        await check_and_finalize_game(session, websocket)
+
                         # Run AI turns
                         if not session.state.is_game_over and not session.is_human_turn:
                             await session_manager.run_ai_turns_until_human(session)
@@ -438,6 +570,9 @@ async def game_websocket(websocket: WebSocket, game_id: str):
                                 "legal_moves": session.moves_to_client(session.legal_moves),
                                 "is_human_turn": session.is_human_turn,
                             })
+
+                            # Check if game ended after AI moves
+                            await check_and_finalize_game(session, websocket)
 
                     except Exception as e:
                         await websocket.send_json({
@@ -487,6 +622,8 @@ async def game_websocket(websocket: WebSocket, game_id: str):
                                 "delay_ms": session.move_delay_ms,
                             },
                         })
+                        # Check if game ended
+                        await check_and_finalize_game(session, websocket)
 
                 elif msg_type == "step":
                     # Execute a single AI turn
@@ -508,6 +645,8 @@ async def game_websocket(websocket: WebSocket, game_id: str):
                             "delay_ms": session.move_delay_ms,
                         },
                     })
+                    # Check if game ended
+                    await check_and_finalize_game(session, websocket)
 
                 elif msg_type == "set_speed":
                     delay_ms = data.get("delay_ms", 500)

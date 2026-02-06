@@ -14,6 +14,7 @@ def main():
         load_dotenv(env_file)
         print(f"Loaded environment from {env_file}")
 
+    # Note: Database initialization is handled in web/api/__init__.py via lifespan
     uvicorn.run(
         "web.api:app",
         host="0.0.0.0",

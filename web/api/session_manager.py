@@ -21,6 +21,8 @@ if TYPE_CHECKING:
     from cuttle_engine.moves import Move
     from cuttle_engine.state import GameState
     from strategies.base import Strategy
+    from core.player_identity import PlayerIdentity
+    from db import Database
 
 
 class PlayerType(str, Enum):
@@ -35,6 +37,7 @@ class PlayerConfig:
     player_type: PlayerType
     strategy_name: str | None = None  # None for human players
     strategy_params: dict[str, Any] = field(default_factory=dict)
+    username: str | None = None  # Username for human players (for ELO tracking)
 
 
 @dataclass
@@ -51,6 +54,8 @@ class GameSession:
     hand_limit: int | None = None  # None = no limit, 8 = standard variant
     move_delay_ms: int = 500  # Delay between AI moves in observer mode
     step_requested: bool = False  # For single-step mode
+    player_identities: tuple["PlayerIdentity", "PlayerIdentity"] | None = None  # For ELO tracking
+    game_start_time: datetime | None = None  # For tracking game duration
 
     # Callbacks for WebSocket notifications
     _state_listeners: list[Callable[[dict], None]] = field(default_factory=list)
@@ -177,6 +182,9 @@ class GameSession:
             ],
             "strategy_names": [
                 self.player_configs[i].strategy_name for i in range(2)
+            ],
+            "player_usernames": [
+                self.player_configs[i].username for i in range(2)
             ],
             "players": [
                 {
@@ -317,9 +325,26 @@ def _move_to_dict(index: int, move: Move) -> dict:
 class GameSessionManager:
     """Manages all active game sessions."""
 
-    def __init__(self):
+    def __init__(self, db: "Database | None" = None):
+        """Initialize the session manager.
+
+        Args:
+            db: Optional database for ELO tracking and game persistence.
+                If None, games are not persisted and ELO is not tracked.
+        """
         self._sessions: dict[str, GameSession] = {}
         self._strategy_factory = StrategyFactory()
+        self._db = db
+        self._elo_manager = None
+        self._player_repo = None
+        self._game_repo = None
+
+        if db is not None:
+            from core.elo_manager import EloManager
+            from db import PlayerRepository, GameRepository
+            self._elo_manager = EloManager(db)
+            self._player_repo = PlayerRepository(db)
+            self._game_repo = GameRepository(db)
 
     def create_session(
         self,
@@ -329,6 +354,8 @@ class GameSessionManager:
         hand_limit: int | None = None,
     ) -> GameSession:
         """Create a new game session."""
+        from core.player_identity import PlayerIdentity
+
         session_id = str(uuid.uuid4())
 
         # Create strategies for AI players
@@ -347,6 +374,33 @@ class GameSessionManager:
                 player1_config.strategy_params,
             )
 
+        # Create player identities for ELO tracking
+        player_identities = None
+        if self._db is not None:
+            identities = []
+            for i, (config, strategy) in enumerate([
+                (player0_config, strategy0),
+                (player1_config, strategy1)
+            ]):
+                if config.player_type == PlayerType.HUMAN:
+                    # Use provided username or generate anonymous one
+                    username = config.username or f"anonymous_{session_id[:8]}_{i}"
+                    identity = PlayerIdentity.from_human(username)
+                else:
+                    # Extract identity from strategy
+                    identity = PlayerIdentity.from_strategy(strategy)
+
+                # Register player in database
+                self._player_repo.get_or_create(
+                    player_id=identity.id,
+                    provider=identity.provider,
+                    model_name=identity.model_name,
+                    params=identity.params_dict,
+                    display_name=identity.display_name,
+                )
+                identities.append(identity)
+            player_identities = tuple(identities)
+
         # Create initial game state
         state = create_initial_state(seed=seed)
 
@@ -357,6 +411,8 @@ class GameSessionManager:
             strategies=(strategy0, strategy1),
             created_at=datetime.now(),
             hand_limit=hand_limit,
+            player_identities=player_identities,
+            game_start_time=datetime.now(),
         )
 
         # Notify strategies of game start
@@ -536,18 +592,101 @@ class GameSessionManager:
 
         return await self.run_ai_turn(session)
 
+    def finalize_game(self, session: GameSession) -> dict | None:
+        """Finalize a completed game - update ELO ratings and persist game record.
+
+        Args:
+            session: The completed game session.
+
+        Returns:
+            Dict with ELO changes for both players, or None if DB not configured.
+        """
+        if self._db is None or session.player_identities is None:
+            return None
+
+        if not session.state.is_game_over:
+            return None
+
+        state = session.state
+        p0_id = session.player_identities[0].id
+        p1_id = session.player_identities[1].id
+
+        # Calculate game duration
+        duration_ms = 0.0
+        if session.game_start_time:
+            duration_ms = (datetime.now() - session.game_start_time).total_seconds() * 1000
+
+        # Log game to database
+        if self._game_repo:
+            self._game_repo.create_game(
+                game_id=session.id,
+                player0_id=p0_id,
+                player1_id=p1_id,
+                winner=state.winner,
+                win_reason=state.win_reason.name if state.win_reason else None,
+                score_p0=state.players[0].point_total,
+                score_p1=state.players[1].point_total,
+                turns=state.turn_number,
+                move_count=len(session.move_history),
+                duration_ms=duration_ms,
+                seed=None,  # We don't track seed for web games currently
+                tournament_id=None,
+            )
+
+        # Update ELO ratings
+        if self._elo_manager:
+            # Use "web" pool for web games
+            updates = self._elo_manager.update_ratings_from_game(
+                p0_id=p0_id,
+                p1_id=p1_id,
+                winner=state.winner,
+                pools=["all", "web"],
+            )
+
+            # Extract rating changes for the "web" pool
+            if "web" in updates:
+                p0_update, p1_update = updates["web"]
+                return {
+                    "player0": {
+                        "player_id": p0_id,
+                        "display_name": session.player_identities[0].display_name,
+                        "old_rating": p0_update.old_rating,
+                        "new_rating": p0_update.new_rating,
+                        "change": p0_update.change,
+                        "games_played": p0_update.games_played,
+                    },
+                    "player1": {
+                        "player_id": p1_id,
+                        "display_name": session.player_identities[1].display_name,
+                        "old_rating": p1_update.old_rating,
+                        "new_rating": p1_update.new_rating,
+                        "change": p1_update.change,
+                        "games_played": p1_update.games_played,
+                    },
+                }
+
+        return None
+
 
 class StrategyFactory:
     """Factory for creating strategy instances."""
 
     AVAILABLE_STRATEGIES = {
         "random": "Random player (baseline)",
-        "heuristic": "Rule-based heuristic player",
+        "heuristic": "MCTS-learned heuristic (v1)",
         "mcts": "Monte Carlo Tree Search",
         "ismcts": "Information Set MCTS (handles hidden info)",
         "llm-haiku": "Claude Haiku (fast, lightweight)",
         "llm-sonnet": "Claude Sonnet (balanced)",
         "llm-opus": "Claude Opus (most capable)",
+        # OpenRouter models
+        "openrouter-qwen3": "Qwen3 235B via OpenRouter",
+        "openrouter-kimi": "Kimi K2.5 via OpenRouter",
+        "openrouter-llama3": "Llama 3.3 70B via OpenRouter",
+        "openrouter-deepseek": "DeepSeek V3 via OpenRouter",
+        # Ollama local models
+        "ollama-llama3": "Llama3 via local Ollama",
+        "ollama-qwen2.5": "Qwen2.5 via local Ollama",
     }
 
     def create(self, name: str, params: dict[str, Any] | None = None) -> Strategy:
@@ -562,7 +701,10 @@ class StrategyFactory:
 
             case "heuristic":
                 from strategies.heuristic import HeuristicStrategy
-                return HeuristicStrategy(seed=params.get("seed"))
+                return HeuristicStrategy(
+                    seed=params.get("seed"),
+                    version=params.get("version"),
+                )
 
             case "mcts":
                 from strategies.mcts import MCTSStrategy
@@ -588,12 +730,40 @@ class StrategyFactory:
                     temperature=params.get("temperature", 0.3),
                 )
 
+            case s if s.startswith("openrouter-"):
+                from strategies.llm import create_llm_strategy
+                model = s.replace("openrouter-", "")
+                return create_llm_strategy(
+                    provider="openrouter",
+                    model=model,
+                    temperature=params.get("temperature", 0.3),
+                )
+
+            case s if s.startswith("ollama-"):
+                from strategies.llm import create_llm_strategy
+                model = s.replace("ollama-", "")
+                return create_llm_strategy(
+                    provider="ollama",
+                    model=model,
+                    temperature=params.get("temperature", 0.3),
+                )
+
             case _:
                 raise ValueError(f"Unknown strategy: {name}")
 
     def list_strategies(self) -> dict[str, str]:
         """List available strategies with descriptions."""
-        return self.AVAILABLE_STRATEGIES.copy()
+        import os
+        strategies = self.AVAILABLE_STRATEGIES.copy()
+
+        # Hide LLM strategies in production (no API keys available)
+        if os.environ.get("HIDE_LLM_STRATEGIES", "").lower() == "true":
+            strategies = {
+                k: v for k, v in strategies.items()
+                if not k.startswith(("llm-", "openrouter-", "ollama-"))
+            }
+
+        return strategies
 
 
 # Global session manager instance

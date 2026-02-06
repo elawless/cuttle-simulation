@@ -18,6 +18,11 @@ from simulation.tournament import (
     analyze_move_distribution,
     compare_strategies_detailed,
 )
+from simulation.llm_tournament import (
+    LLMTournamentRunner,
+    TournamentConfig,
+    StrategySpec,
+)
 
 __all__ = [
     # runner
@@ -36,4 +41,8 @@ __all__ = [
     "run_gauntlet",
     "analyze_move_distribution",
     "compare_strategies_detailed",
+    # llm_tournament
+    "LLMTournamentRunner",
+    "TournamentConfig",
+    "StrategySpec",
 ]

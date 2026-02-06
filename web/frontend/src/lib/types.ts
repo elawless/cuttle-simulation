@@ -63,6 +63,7 @@ export interface GameState {
 	acting_player: number;
 	player_types: string[];
 	strategy_names: (string | null)[];
+	player_usernames: (string | null)[];
 	players: Player[];
 	counter_state: CounterState | null;
 	seven_state: SevenState | null;
@@ -111,6 +112,31 @@ export interface GameResponse {
 export interface Strategy {
 	name: string;
 	description: string;
+}
+
+export interface EloUpdate {
+	player_id: string;
+	display_name: string;
+	old_rating: number;
+	new_rating: number;
+	change: number;
+	games_played: number;
+}
+
+export interface EloUpdates {
+	player0: EloUpdate;
+	player1: EloUpdate;
+}
+
+export interface LeaderboardEntry {
+	rank: number;
+	player_id: string;
+	display_name: string;
+	provider: string;
+	model_name: string;
+	rating: number;
+	games_played: number;
+	is_human: boolean;
 }
 
 export type GamePhase =

@@ -55,14 +55,22 @@ class HeuristicStrategy(Strategy):
     8. Counter only Aces and Fives
     9. Scuttle rarely (only for lethal or huge value differential)
     10. Queens/8-as-Glasses are low priority
+
+    Version History:
+    - v1: Initial MCTS-learned heuristic (Feb 2026)
     """
 
-    def __init__(self, seed: int | None = None):
+    VERSION = "v1"
+
+    def __init__(self, seed: int | None = None, version: str | None = None):
         self._rng = random.Random(seed)
+        self._seed = seed
+        # Allow overriding version for testing different variants
+        self._version = version or self.VERSION
 
     @property
     def name(self) -> str:
-        return "Heuristic"
+        return f"Heuristic-{self._version}"
 
     def select_move(self, state: GameState, legal_moves: list[Move]) -> Move:
         """Select a move based on heuristic evaluation."""

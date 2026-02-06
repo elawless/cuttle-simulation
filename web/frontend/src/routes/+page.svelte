@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { createGame, fetchStrategies } from '$lib/stores/gameStore';
 
 	let strategies: { name: string; description: string }[] = [];
@@ -12,8 +13,13 @@
 	let gameSpeed = 500;                // Delay between AI moves in ms
 	let isCreating = false;
 	let error: string | null = null;
+	let username: string = '';          // Player username for ELO tracking
 
+	// Load username from localStorage on mount
 	onMount(async () => {
+		if (browser) {
+			username = localStorage.getItem('cuttle_username') || '';
+		}
 		try {
 			strategies = await fetchStrategies();
 		} catch (e) {
@@ -21,19 +27,28 @@
 		}
 	});
 
+	// Save username to localStorage when it changes
+	function saveUsername() {
+		if (browser && username.trim()) {
+			localStorage.setItem('cuttle_username', username.trim());
+		}
+	}
+
 	async function startGame() {
 		isCreating = true;
 		error = null;
+		saveUsername();
 
 		try {
 			let gameId: string;
+			const playerUsername = username.trim() || null;
 			if (humanGoesFirst) {
 				// Human is player 0 (goes first, 5 cards)
-				gameId = await createGame('human', null, 'ai', selectedStrategy, undefined, handLimit);
+				gameId = await createGame('human', null, 'ai', selectedStrategy, undefined, handLimit, false, playerUsername, null);
 				goto(`/game/${gameId}?viewer=0`);
 			} else {
 				// Human is player 1 (goes second, 6 cards)
-				gameId = await createGame('ai', selectedStrategy, 'human', null, undefined, handLimit);
+				gameId = await createGame('ai', selectedStrategy, 'human', null, undefined, handLimit, false, null, playerUsername);
 				goto(`/game/${gameId}?viewer=1`);
 			}
 		} catch (e) {
@@ -64,6 +79,7 @@
 	<div class="hero">
 		<h1 class="title">Cuttle</h1>
 		<p class="subtitle">The classic two-player card combat game</p>
+		<a href="/leaderboard" class="leaderboard-link">View Leaderboard</a>
 	</div>
 
 	<div class="game-setup">
@@ -73,6 +89,19 @@
 			{#if error}
 				<div class="error">{error}</div>
 			{/if}
+
+			<div class="form-group">
+				<label for="username">Your Username</label>
+				<input
+					type="text"
+					id="username"
+					bind:value={username}
+					placeholder="Enter username for ELO tracking"
+					disabled={isCreating}
+					maxlength="20"
+				/>
+				<span class="hint">Leave blank to play anonymously</span>
+			</div>
 
 			<div class="form-group">
 				<label for="strategy">AI Opponent</label>
@@ -216,6 +245,23 @@
 		margin: 8px 0 0 0;
 	}
 
+	.leaderboard-link {
+		display: inline-block;
+		margin-top: 16px;
+		padding: 8px 16px;
+		background: #334155;
+		color: #e2e8f0;
+		text-decoration: none;
+		border-radius: 6px;
+		font-size: 14px;
+		font-weight: 500;
+		transition: all 0.2s ease;
+	}
+
+	.leaderboard-link:hover {
+		background: #475569;
+	}
+
 	.game-setup {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
@@ -264,7 +310,8 @@
 		margin-bottom: 8px;
 	}
 
-	.form-group select {
+	.form-group select,
+	.form-group input[type="text"] {
 		width: 100%;
 		padding: 10px 12px;
 		font-size: 14px;
@@ -275,9 +322,21 @@
 		cursor: pointer;
 	}
 
-	.form-group select:focus {
+	.form-group input[type="text"] {
+		cursor: text;
+	}
+
+	.form-group select:focus,
+	.form-group input[type="text"]:focus {
 		outline: none;
 		border-color: #3b82f6;
+	}
+
+	.form-group .hint {
+		display: block;
+		font-size: 11px;
+		color: #64748b;
+		margin-top: 4px;
 	}
 
 	.actions {
