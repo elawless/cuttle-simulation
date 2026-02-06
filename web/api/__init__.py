@@ -79,6 +79,8 @@ prod_url = os.environ.get("FRONTEND_URL")
 if prod_url:
     cors_origins.append(prod_url)
 
+print(f"CORS origins configured: {cors_origins}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
