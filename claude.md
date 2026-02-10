@@ -7,11 +7,18 @@ A Python simulation of the card game Cuttle, with multiple AI strategies includi
 ## Architecture
 
 - `cuttle_engine/` - Core game logic (immutable states, move generation, execution)
-- `strategies/` - AI strategies (RandomStrategy, HeuristicStrategy, MCTSStrategy, LLMStrategy)
+- `strategies/` - AI strategies:
+  - `RandomStrategy` - Baseline random player
+  - `HeuristicStrategy` (v1) - MCTS-learned heuristic
+  - `HeuristicStrategyV2` (v2) - Enhanced with Minimax learnings
+  - `MinimaxStrategy` - Alpha-beta search (configurable depth)
+  - `MCTSStrategy` - Monte Carlo Tree Search
+  - `ISMCTSStrategy` - Information Set MCTS
+  - `LLMStrategy` - Claude-powered player
 - `simulation/` - Game runner and tournament infrastructure
 - `training/` - Parallel game runner and data collection for MCTS training
 - `web/` - Web UI (FastAPI backend + SvelteKit frontend)
-- `tests/` - 103 passing tests covering engine behavior
+- `tests/` - 116+ passing tests covering engine behavior
 
 ## Known Edge Cases & Gotchas
 
@@ -422,6 +429,114 @@ See `training_data/MCTS_ANALYSIS_SUMMARY.md` for full details.
 - One-offs (4,5,7): MCTS prefers points 60-70% of time - REDUCED one-off scores
 - Draw: 58% win rate - REDUCED scoring (250)
 - Scuttle: 10% usage rate when available, +18.7% better to not scuttle
+
+## Minimax Strategy & MCTS vs Minimax Analysis (Feb 2026)
+
+### Minimax Implementation
+
+The `MinimaxStrategy` implements alpha-beta pruning search with configurable depth:
+
+```python
+from strategies.minimax import MinimaxStrategy
+
+# Default depth 2 (like cuttle.cards)
+minimax = MinimaxStrategy(depth=2)
+
+# Higher depth for stronger play (slower)
+minimax_deep = MinimaxStrategy(depth=6)
+```
+
+### MCTS vs Minimax Tournament Results
+
+| Depth | MCTS Win Rate | Minimax Win Rate | Gap from 50/50 |
+|-------|---------------|------------------|----------------|
+| 2 | 93% | 7% | 43% |
+| 3 | 72% | 28% | 22% |
+| 4 | 66% | 34% | 16% |
+| 5 | 60% | 40% | 10% |
+| **6** | **54%** | **46%** | **4%** |
+
+**At depth 6, MCTS and Minimax are nearly equal strength.**
+
+### Key Finding: Destroy vs Race Strategy
+
+MCTS and Minimax play very differently:
+
+| Strategy | One-Off Usage | Points Usage |
+|----------|---------------|--------------|
+| Minimax | 56-62% | 38-44% |
+| MCTS | 25-27% | 73-75% |
+
+**Minimax plays 2x more one-offs, MCTS races with points.**
+
+### One-Off Win Rates (From Analysis)
+
+| Card | Win Rate | Verdict |
+|------|----------|---------|
+| **Six** | **64%** | ✅ Best - clears Kings/Queens |
+| Five | 50% | ⚠️ Okay - draw 2 for tempo |
+| Seven | 46% | ⚠️ Okay - tempo |
+| Two | 43% | ⚠️ Situational |
+| Four | 42% | ⚠️ Situational |
+| Three | 30% | ❌ Usually play for 3 pts |
+| Ace | 28% | ❌ Often a trap |
+| **Nine** | **0%** | ❌ NEVER use |
+
+### One-Off Timing: Early vs Late
+
+| Timing | In Wins | In Losses | Ratio |
+|--------|---------|-----------|-------|
+| Early (T1-4) | 22 | 19 | 1.2:1 ✅ |
+| Late (T5+) | 52 | 97 | 0.5:1 ❌ |
+
+**Late one-offs (Turn 5+) appear 2x more often in LOSSES.**
+
+### One-Off Budget
+
+| One-Offs Used | Win Rate |
+|---------------|----------|
+| ≤2 | ~70% |
+| >2 | ~30% |
+
+**Using more than 2 one-offs in a game correlates with losing.**
+
+### When to Destroy vs Race
+
+**DESTROY if ALL true:**
+1. Turn 1-4 (early game)
+2. Have Six AND opponent has King/Queen
+3. Used ≤1 one-off so far
+4. Have follow-up points to score
+
+**RACE if ANY true:**
+- Turn 5+ (mid/late game)
+- Ahead or even on points
+- Have Kings (threshold reduction)
+- Already used 2+ one-offs
+
+### The One-Sentence Rule
+
+> "Destroy once early if you have Six targeting their King, otherwise race for points."
+
+### Heuristic v2 Changes
+
+Based on this analysis, `HeuristicStrategyV2` implements:
+
+1. **One-off timing penalty**: -200 for late-game (T5+) one-offs
+2. **One-off budget tracking**: -300 penalty after 2+ one-offs used
+3. **Six prioritization**: Only good one-off, boost when opponent has Kings/Queens
+4. **Nine avoidance**: Return -100 for Nine one-off (0% win rate)
+5. **Early King boost**: +150 for Kings in turns 1-4 (compounds)
+6. **Late draw preference**: Draw scores higher than one-offs late game
+
+### Tournament Script
+
+```bash
+# Compare strategies at different depths
+source .venv/bin/activate
+python scripts/mcts_vs_minimax.py --depth 4 --games 50
+python scripts/mcts_vs_minimax.py --depth 6 --games 50
+```
 
 ## Performance Notes
 

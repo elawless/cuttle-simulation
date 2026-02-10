@@ -674,6 +674,8 @@ class StrategyFactory:
     AVAILABLE_STRATEGIES = {
         "random": "Random player (baseline)",
         "heuristic": "MCTS-learned heuristic (v1)",
+        "heuristic-v2": "Enhanced heuristic with Minimax learnings (v2)",
+        "minimax": "Minimax search (depth 2)",
         "mcts": "Monte Carlo Tree Search",
         "ismcts": "Information Set MCTS (handles hidden info)",
         "llm-haiku": "Claude Haiku (fast, lightweight)",
@@ -704,6 +706,17 @@ class StrategyFactory:
                 return HeuristicStrategy(
                     seed=params.get("seed"),
                     version=params.get("version"),
+                )
+
+            case "heuristic-v2":
+                from strategies.heuristic import HeuristicStrategyV2
+                return HeuristicStrategyV2(seed=params.get("seed"))
+
+            case "minimax":
+                from strategies.minimax import MinimaxStrategy
+                return MinimaxStrategy(
+                    depth=params.get("depth", 2),
+                    seed=params.get("seed"),
                 )
 
             case "mcts":

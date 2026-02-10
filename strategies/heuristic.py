@@ -13,6 +13,16 @@ This heuristic was tuned based on analysis of 1000+ MCTS games that achieved
 8. Use Sevens for deck play one-off
 9. Counter selectively (only Aces and Fives)
 10. When behind, use Jacks to steal high-value points
+
+VERSION HISTORY:
+- v1: Initial MCTS-learned heuristic (Feb 2026)
+- v2: Incorporates Minimax analysis learnings (Feb 2026):
+  * One-off timing: early (T1-4) is okay, late (T5+) is bad
+  * Six is best one-off (64% win rate), Nine is worst (0%)
+  * Limit one-offs to 1-2 per game - over-destroying loses
+  * Kings early > Kings late (threshold reduction compounds)
+  * Racing beats destroying in most cases (75% points > 25% one-offs)
+  * Destroy only when: behind AND have Six targeting King/Queen
 """
 
 from __future__ import annotations
@@ -58,6 +68,7 @@ class HeuristicStrategy(Strategy):
 
     Version History:
     - v1: Initial MCTS-learned heuristic (Feb 2026)
+    - v2: Minimax-informed refinements (Feb 2026)
     """
 
     VERSION = "v1"
@@ -67,10 +78,16 @@ class HeuristicStrategy(Strategy):
         self._seed = seed
         # Allow overriding version for testing different variants
         self._version = version or self.VERSION
+        # Track one-off usage for v2 strategy
+        self._oneoffs_used = 0
 
     @property
     def name(self) -> str:
         return f"Heuristic-{self._version}"
+
+    def on_game_start(self, state: GameState, player_idx: int) -> None:
+        """Reset per-game tracking."""
+        self._oneoffs_used = 0
 
     def select_move(self, state: GameState, legal_moves: list[Move]) -> Move:
         """Select a move based on heuristic evaluation."""
@@ -337,3 +354,295 @@ class HeuristicStrategy(Strategy):
                 return 100
 
         return 0
+
+
+class HeuristicStrategyV2(Strategy):
+    """Enhanced heuristic incorporating Minimax vs MCTS analysis learnings.
+
+    Key differences from v1:
+    1. One-off timing: penalize late-game (T5+) one-offs heavily
+    2. One-off budget: track and limit to 1-2 per game
+    3. Six is the ONLY reliable one-off (64% win rate)
+    4. Nine one-off is NEVER good (0% win rate)
+    5. Kings are better early (threshold reduction compounds)
+    6. Racing > Destroying in 75% of situations
+
+    Decision Framework:
+    - DESTROY if: Turn 1-4, have Six, opponent has King/Queen, used <2 one-offs
+    - RACE otherwise: Points > Draw > One-offs
+    """
+
+    VERSION = "v2"
+    name = "Heuristic-v2"
+
+    # One-off win rates from analysis
+    ONEOFF_WIN_RATES = {
+        Rank.SIX: 0.64,    # Best - clear Kings/Queens
+        Rank.FIVE: 0.50,   # Okay - draw 2
+        Rank.SEVEN: 0.46,  # Okay - tempo
+        Rank.TWO: 0.43,    # Situational
+        Rank.FOUR: 0.42,   # Situational
+        Rank.THREE: 0.30,  # Usually play for points
+        Rank.ACE: 0.28,    # Often a trap
+        Rank.NINE: 0.00,   # NEVER use
+    }
+
+    def __init__(self, seed: int | None = None):
+        self._rng = random.Random(seed)
+        self._seed = seed
+        self._oneoffs_used = 0
+
+    def on_game_start(self, state: GameState, player_idx: int) -> None:
+        """Reset per-game tracking."""
+        self._oneoffs_used = 0
+
+    def select_move(self, state: GameState, legal_moves: list[Move]) -> Move:
+        """Select a move based on v2 heuristic evaluation."""
+        if not legal_moves:
+            raise ValueError("No legal moves available")
+
+        player_idx = state.current_player
+        my_points = state.players[player_idx].point_total
+        opp_points = state.players[1 - player_idx].point_total
+        point_diff = my_points - opp_points
+
+        # Score each move
+        scored_moves = [
+            (self._score_move(state, move, player_idx, point_diff), move)
+            for move in legal_moves
+        ]
+
+        best_score = max(score for score, _ in scored_moves)
+        best_moves = [move for score, move in scored_moves if score == best_score]
+        chosen = self._rng.choice(best_moves)
+
+        # Track one-off usage
+        if isinstance(chosen, PlayOneOff):
+            self._oneoffs_used += 1
+
+        return chosen
+
+    def _score_move(
+        self, state: GameState, move: Move, player_idx: int, point_diff: int
+    ) -> float:
+        """Score a move using v2 heuristic."""
+        my_points = state.players[player_idx].point_total
+        opp_points = state.players[1 - player_idx].point_total
+        threshold = state.point_threshold(player_idx)
+        opp_threshold = state.point_threshold(1 - player_idx)
+
+        is_early = state.turn_number <= 4
+        is_late = state.turn_number >= 5
+        is_behind = point_diff < -3
+        is_behind_big = point_diff < -8
+        is_ahead = point_diff > 3
+
+        # Check opponent's permanents for Six targeting
+        opp_kings = sum(
+            1 for c in state.players[1 - player_idx].permanents if c.rank == Rank.KING
+        )
+        opp_queens = state.players[1 - player_idx].queens_count
+
+        match move:
+            case PlayPoints(card=card):
+                # Check for win
+                if my_points + card.point_value >= threshold:
+                    return 10000
+
+                # High cards are extremely valuable
+                if card.point_value >= 8:
+                    return 900 + card.point_value * 10
+                elif card.point_value >= 5:
+                    return 500 + card.point_value * 10
+                else:
+                    return 300 + card.point_value * 10
+
+            case Scuttle(card=card, target=target):
+                # Prevent opponent win
+                if opp_points >= opp_threshold - target.point_value:
+                    return 5000
+
+                value_gained = target.point_value - card.point_value
+
+                # Only scuttle when behind big and good value
+                if is_behind_big and value_gained >= 5:
+                    return 150 + value_gained * 10
+
+                return 30 + value_gained
+
+            case PlayPermanent(card=card, target_card=target):
+                if card.rank == Rank.KING:
+                    # Kings are BETTER early (threshold reduction compounds)
+                    # v2 change: boost early King plays
+                    if is_early:
+                        return 750  # Higher than v1
+                    return 550
+
+                elif card.rank == Rank.JACK and target:
+                    base = 450 + target.point_value * 25
+                    if is_behind_big:
+                        return base + 200
+                    elif is_behind:
+                        return base + 100
+                    return base
+
+                elif card.rank == Rank.QUEEN:
+                    return 100
+
+                elif card.rank == Rank.EIGHT:
+                    return 50
+
+            case PlayOneOff(card=card, effect=effect):
+                from cuttle_engine.moves import OneOffEffect
+
+                # v2 KEY CHANGE: Heavily penalize late one-offs
+                # Late one-offs appear 2x more often in LOSSES
+                late_penalty = -200 if is_late else 0
+
+                # v2 KEY CHANGE: Penalize if already used 2+ one-offs
+                # Games with >2 one-offs have 30% win rate vs 70% with <=2
+                overuse_penalty = -300 if self._oneoffs_used >= 2 else 0
+
+                # Get base win rate for this one-off type
+                base_win_rate = self.ONEOFF_WIN_RATES.get(card.rank, 0.3)
+
+                if effect == OneOffEffect.SIX_SCRAP_ALL_PERMANENTS:
+                    # SIX is the BEST one-off (64% win rate)
+                    # v2: Only good if opponent has Kings or Queens
+                    if opp_kings > 0 or opp_queens > 0:
+                        value = 600 + opp_kings * 100 + opp_queens * 50
+                        # Less penalty for Six since it's actually good
+                        return value + late_penalty // 2 + overuse_penalty // 2
+                    return 50  # No good targets, play for 6 points
+
+                elif effect == OneOffEffect.NINE_RETURN_PERMANENT:
+                    # NINE is NEVER good (0% win rate)
+                    # v2: Actively avoid Nine one-off
+                    return -100
+
+                elif effect == OneOffEffect.ACE_SCRAP_ALL_POINTS:
+                    # Ace: 28% win rate - only when behind big
+                    if is_behind_big and is_early:
+                        return 500 + late_penalty + overuse_penalty
+                    elif is_behind_big:
+                        return 200 + late_penalty + overuse_penalty
+                    # v2: Never use when even/ahead
+                    return -150
+
+                elif effect == OneOffEffect.THREE_REVIVE:
+                    # 30% win rate - usually play for points
+                    best_revive = 0
+                    for c in state.scrap:
+                        if c.rank == Rank.JACK:
+                            best_revive = max(best_revive, 500)
+                        elif c.rank == Rank.TEN:
+                            best_revive = max(best_revive, 450)
+                        elif c.rank == Rank.KING:
+                            best_revive = max(best_revive, 400)
+                        elif c.point_value >= 8:
+                            best_revive = max(best_revive, 350)
+
+                    if best_revive > 0:
+                        return best_revive + late_penalty + overuse_penalty
+                    return 50  # Play for 3 points
+
+                elif effect == OneOffEffect.FOUR_DISCARD:
+                    # 42% win rate - only early
+                    if is_early:
+                        return 300 + late_penalty + overuse_penalty
+                    return 100 + late_penalty + overuse_penalty
+
+                elif effect == OneOffEffect.FIVE_DRAW_TWO:
+                    # 50% win rate - okay
+                    if is_early:
+                        return 350 + late_penalty + overuse_penalty
+                    return 150 + late_penalty + overuse_penalty
+
+                elif effect == OneOffEffect.SEVEN_PLAY_FROM_DECK:
+                    # 46% win rate - okay for tempo
+                    if is_early:
+                        return 300 + late_penalty + overuse_penalty
+                    return 100 + late_penalty + overuse_penalty
+
+                elif effect == OneOffEffect.TWO_DESTROY_PERMANENT:
+                    # 43% win rate - only for critical targets
+                    if opp_kings > 0:
+                        return 250 + late_penalty + overuse_penalty
+                    return 50 + late_penalty + overuse_penalty
+
+                return 100 + late_penalty + overuse_penalty
+
+            case Counter(card=card):
+                if state.counter_state and state.counter_state.one_off_card:
+                    threat_rank = state.counter_state.one_off_card.rank
+                    if threat_rank == Rank.ACE:
+                        return 400
+                    elif threat_rank == Rank.FIVE:
+                        return 350
+                    elif threat_rank == Rank.SIX:
+                        # v2: Counter Six more (it's actually dangerous)
+                        return 300
+                    elif threat_rank == Rank.FOUR:
+                        return 100
+                    else:
+                        return 50
+                return 100
+
+            case DeclineCounter():
+                if state.counter_state:
+                    threat_rank = state.counter_state.one_off_card.rank
+                    if threat_rank == Rank.NINE:
+                        return 250  # Always decline Nine (it's weak)
+                    elif threat_rank in (Rank.THREE, Rank.SEVEN):
+                        return 200
+                    elif threat_rank in (Rank.TWO, Rank.FOUR):
+                        return 150
+                    elif threat_rank == Rank.FIVE:
+                        return 50
+                    elif threat_rank == Rank.SIX:
+                        return -50  # Don't decline Six
+                    elif threat_rank == Rank.ACE:
+                        return -100
+                return 100
+
+            case Draw():
+                # v2: Draw is slightly better than one-offs late game
+                if is_late:
+                    return 280  # Higher than most late one-offs
+                return 250
+
+            case Pass():
+                return 0
+
+            case Discard(card=card):
+                return 10 - card.point_value
+
+            case ResolveSeven(card=card, play_as=play_as, target_card=target):
+                if play_as == MoveType.PLAY_ONE_OFF:
+                    # Track this as a one-off
+                    if card.rank == Rank.FIVE:
+                        return 400
+                    elif card.rank == Rank.ACE and opp_points > my_points:
+                        return 300
+                    return 200
+                elif play_as == MoveType.PLAY_POINTS:
+                    if my_points + card.point_value >= threshold:
+                        return 10000
+                    return 300 + card.point_value * 10
+                elif play_as == MoveType.SCUTTLE:
+                    if target:
+                        return 50 + target.point_value - card.point_value
+                    return 50
+                elif play_as == MoveType.PLAY_PERMANENT:
+                    if card.rank == Rank.KING:
+                        return 600 if is_early else 450
+                    elif card.rank == Rank.JACK and target:
+                        return 450 + target.point_value * 25
+                    return 100
+                return 100
+
+        return 0
+
+    def get_identity_params(self) -> dict:
+        """Return parameters that identify this strategy configuration."""
+        return {"version": self.VERSION}
