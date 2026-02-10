@@ -388,7 +388,7 @@ def _resolve_one_off(state: GameState, counter_state: CounterState) -> GameState
         case Rank.FIVE:
             return _resolve_five(state, caster)
         case Rank.SIX:
-            return _resolve_six(state)
+            return _resolve_six(state, caster)
         case Rank.SEVEN:
             return _resolve_seven(state, caster)
         case Rank.NINE:
@@ -430,21 +430,29 @@ def _resolve_two(
     if target_card in player.permanents:
         new_permanents = tuple(c for c in player.permanents if c != target_card)
         new_player = player.with_permanents(new_permanents)
+        players = list(state.players)
+        players[target_player] = new_player
+        new_scrap = state.scrap + (target_card,)
+        return state.with_players((players[0], players[1])).with_scrap(new_scrap)
     elif any(j == target_card for j, _ in player.jacks):
-        # Removing a Jack - the stolen card goes to scrap too
+        # Removing a Jack - stolen card returns to opponent's points (not scrap)
         stolen = next(s for j, s in player.jacks if j == target_card)
         new_jacks = tuple((j, s) for j, s in player.jacks if j != target_card)
         new_player = player.with_jacks(new_jacks)
-        new_scrap = state.scrap + (stolen,)
-        state = state.with_scrap(new_scrap)
+
+        # Return stolen card to opponent's point field
+        opponent_idx = 1 - target_player
+        opponent = state.players[opponent_idx]
+        new_opponent_points = opponent.points_field + (stolen,)
+        new_opponent = opponent.with_points_field(new_opponent_points)
+
+        players = list(state.players)
+        players[target_player] = new_player
+        players[opponent_idx] = new_opponent
+        new_scrap = state.scrap + (target_card,)
+        return state.with_players((players[0], players[1])).with_scrap(new_scrap)
     else:
         raise IllegalMoveError(f"Target {target_card} not found")
-
-    players = list(state.players)
-    players[target_player] = new_player
-    new_scrap = state.scrap + (target_card,)
-
-    return state.with_players((players[0], players[1])).with_scrap(new_scrap)
 
 
 def _resolve_three(state: GameState, caster: int, target_card: Card | None) -> GameState:
@@ -503,21 +511,28 @@ def _resolve_five(state: GameState, caster: int) -> GameState:
     return state.with_players((players[0], players[1])).with_deck(new_deck)
 
 
-def _resolve_six(state: GameState) -> GameState:
-    """Six: Scrap all permanents (both players)."""
+def _resolve_six(state: GameState, caster: int) -> GameState:
+    """Six: Scrap all of OPPONENT's permanents (not caster's)."""
     cards_to_scrap: list[Card] = []
     new_players = list(state.players)
+    opponent_idx = 1 - caster
 
-    for i in range(2):
-        player = new_players[i]
-        # Scrap all permanents (8, Q, K)
-        cards_to_scrap.extend(player.permanents)
-        # Scrap all jacks and their stolen cards
-        for jack, stolen in player.jacks:
-            cards_to_scrap.append(jack)
-            cards_to_scrap.append(stolen)
+    opponent = new_players[opponent_idx]
+    # Scrap all opponent's permanents (8, Q, K)
+    cards_to_scrap.extend(opponent.permanents)
+    # Scrap opponent's jacks; stolen cards return to caster's points
+    returned_cards: list[Card] = []
+    for jack, stolen in opponent.jacks:
+        cards_to_scrap.append(jack)
+        returned_cards.append(stolen)
 
-        new_players[i] = player.with_permanents(()).with_jacks(())
+    new_players[opponent_idx] = opponent.with_permanents(()).with_jacks(())
+
+    # Return stolen cards to caster's point field
+    if returned_cards:
+        caster_player = new_players[caster]
+        new_caster_points = caster_player.points_field + tuple(returned_cards)
+        new_players[caster] = caster_player.with_points_field(new_caster_points)
 
     new_scrap = state.scrap + tuple(cards_to_scrap)
     return state.with_players((new_players[0], new_players[1])).with_scrap(new_scrap)

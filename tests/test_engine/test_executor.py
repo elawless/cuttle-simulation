@@ -451,10 +451,11 @@ class TestThreeEffect:
 
 
 class TestSixEffect:
-    def test_six_scraps_all_permanents(self):
+    def test_six_scraps_only_opponent_permanents(self):
+        """Six should only scrap opponent's permanents, not caster's."""
         six = Card(Rank.SIX, Suit.CLUBS)
-        queen = Card(Rank.QUEEN, Suit.SPADES)
-        king = Card(Rank.KING, Suit.HEARTS)
+        queen = Card(Rank.QUEEN, Suit.SPADES)  # Caster's queen
+        king = Card(Rank.KING, Suit.HEARTS)  # Opponent's king
 
         counter_state = CounterState(one_off_card=six, one_off_player=0)
 
@@ -471,10 +472,41 @@ class TestSixEffect:
 
         new_state = execute_move(state, DeclineCounter())
 
-        assert len(new_state.players[0].permanents) == 0
+        # Caster's permanents should remain
+        assert queen in new_state.players[0].permanents
+        # Opponent's permanents should be scrapped
         assert len(new_state.players[1].permanents) == 0
-        assert queen in new_state.scrap
         assert king in new_state.scrap
+        # Caster's queen should NOT be in scrap
+        assert queen not in new_state.scrap
+
+    def test_six_returns_stolen_cards_to_caster(self):
+        """When Six destroys opponent's Jacks, stolen cards return to caster's points."""
+        six = Card(Rank.SIX, Suit.CLUBS)
+        jack = Card(Rank.JACK, Suit.SPADES)
+        five = Card(Rank.FIVE, Suit.HEARTS)  # Card stolen by opponent's Jack
+
+        counter_state = CounterState(one_off_card=six, one_off_player=0)
+
+        player0 = PlayerState(hand=(), points_field=(), permanents=())
+        player1 = PlayerState(hand=(), points_field=(), permanents=(), jacks=((jack, five),))
+        state = GameState(
+            players=(player0, player1),
+            deck=(Card(Rank.TWO, Suit.HEARTS),),
+            scrap=(),
+            current_player=0,
+            phase=GamePhase.COUNTER,
+            counter_state=counter_state,
+        )
+
+        new_state = execute_move(state, DeclineCounter())
+
+        # Jack should be scrapped
+        assert jack in new_state.scrap
+        # Stolen card should return to caster's (player 0's) points
+        assert five in new_state.players[0].points_field
+        # Opponent should have no jacks
+        assert len(new_state.players[1].jacks) == 0
 
 
 class TestNineEffect:
@@ -501,3 +533,63 @@ class TestNineEffect:
 
         assert queen not in new_state.players[1].permanents
         assert queen in new_state.players[1].hand
+
+
+class TestTwoEffect:
+    def test_two_destroys_permanent(self):
+        """Two should destroy a target permanent."""
+        two = Card(Rank.TWO, Suit.CLUBS)
+        queen = Card(Rank.QUEEN, Suit.SPADES)
+
+        counter_state = CounterState(
+            one_off_card=two, one_off_player=0, target_card=queen, target_player=1
+        )
+
+        player0 = PlayerState(hand=(), points_field=(), permanents=())
+        player1 = PlayerState(hand=(), points_field=(), permanents=(queen,))
+        state = GameState(
+            players=(player0, player1),
+            deck=(Card(Rank.THREE, Suit.HEARTS),),
+            scrap=(),
+            current_player=0,
+            phase=GamePhase.COUNTER,
+            counter_state=counter_state,
+        )
+
+        new_state = execute_move(state, DeclineCounter())
+
+        assert queen not in new_state.players[1].permanents
+        assert queen in new_state.scrap
+        assert two in new_state.scrap
+
+    def test_two_destroying_jack_returns_stolen_to_opponent(self):
+        """When Two destroys a Jack, the stolen card returns to opponent's points."""
+        two = Card(Rank.TWO, Suit.CLUBS)
+        jack = Card(Rank.JACK, Suit.SPADES)
+        five = Card(Rank.FIVE, Suit.HEARTS)  # Card stolen from player 0
+
+        counter_state = CounterState(
+            one_off_card=two, one_off_player=0, target_card=jack, target_player=1
+        )
+
+        # Player 1 has a Jack that stole player 0's five
+        player0 = PlayerState(hand=(), points_field=(), permanents=())
+        player1 = PlayerState(hand=(), points_field=(), permanents=(), jacks=((jack, five),))
+        state = GameState(
+            players=(player0, player1),
+            deck=(Card(Rank.THREE, Suit.HEARTS),),
+            scrap=(),
+            current_player=0,
+            phase=GamePhase.COUNTER,
+            counter_state=counter_state,
+        )
+
+        new_state = execute_move(state, DeclineCounter())
+
+        # Jack should be scrapped
+        assert jack in new_state.scrap
+        # Stolen card should return to player 0's points (not scrap!)
+        assert five in new_state.players[0].points_field
+        assert five not in new_state.scrap
+        # Player 1 should have no jacks
+        assert len(new_state.players[1].jacks) == 0
