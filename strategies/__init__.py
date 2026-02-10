@@ -6,6 +6,7 @@ from strategies.random_strategy import RandomStrategy
 from strategies.mcts import MCTSStrategy
 from strategies.ismcts import ISMCTSStrategy
 from strategies.minimax import MinimaxStrategy
+from strategies.knowledge import MemoryLevel
 
 __all__ = [
     "Strategy",
@@ -15,4 +16,5 @@ __all__ = [
     "MCTSStrategy",
     "ISMCTSStrategy",
     "MinimaxStrategy",
+    "MemoryLevel",
 ]

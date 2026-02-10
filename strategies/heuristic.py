@@ -45,6 +45,12 @@ from cuttle_engine.moves import (
     Scuttle,
 )
 from strategies.base import Strategy
+from strategies.knowledge import (
+    KnowledgeTracker,
+    MemoryLevel,
+    analyze_known_hand,
+    get_unknown_card_count,
+)
 
 if TYPE_CHECKING:
     from cuttle_engine.moves import Move
@@ -69,25 +75,66 @@ class HeuristicStrategy(Strategy):
     Version History:
     - v1: Initial MCTS-learned heuristic (Feb 2026)
     - v2: Minimax-informed refinements (Feb 2026)
+    - v3: Glasses knowledge tracking (Feb 2026)
+
+    Memory Levels (for knowledge tracking):
+    - PERFECT: Remember all seen cards until they leave opponent's hand
+    - TURN_LIMITED: Remember cards for N turns after seeing them
+    - PROBABILISTIC: Chance to forget cards each turn
+    - NONE: No memory, only use current Glasses visibility
     """
 
     VERSION = "v1"
 
-    def __init__(self, seed: int | None = None, version: str | None = None):
+    def __init__(
+        self,
+        seed: int | None = None,
+        version: str | None = None,
+        memory_level: MemoryLevel = MemoryLevel.PERFECT,
+        memory_turns: int = 3,
+        forget_probability: float = 0.3,
+    ):
+        """Initialize the heuristic strategy.
+
+        Args:
+            seed: Random seed for tie-breaking and probabilistic forgetting
+            version: Strategy version override
+            memory_level: How much to remember about opponent's hand
+            memory_turns: For TURN_LIMITED, how many turns to remember
+            forget_probability: For PROBABILISTIC, chance to forget per turn
+        """
         self._rng = random.Random(seed)
         self._seed = seed
         # Allow overriding version for testing different variants
         self._version = version or self.VERSION
         # Track one-off usage for v2 strategy
         self._oneoffs_used = 0
+        # Knowledge tracking configuration
+        self._memory_level = memory_level
+        self._memory_turns = memory_turns
+        self._forget_probability = forget_probability
+        # Knowledge tracker (initialized on game start)
+        self._knowledge: KnowledgeTracker | None = None
+        self._player_idx: int | None = None
 
     @property
     def name(self) -> str:
-        return f"Heuristic-{self._version}"
+        mem_suffix = ""
+        if self._memory_level != MemoryLevel.NONE:
+            mem_suffix = f"-mem:{self._memory_level.name.lower()}"
+        return f"Heuristic-{self._version}{mem_suffix}"
 
     def on_game_start(self, state: GameState, player_idx: int) -> None:
-        """Reset per-game tracking."""
+        """Reset per-game tracking and initialize knowledge tracker."""
         self._oneoffs_used = 0
+        self._player_idx = player_idx
+        self._knowledge = KnowledgeTracker.create(
+            player_idx=player_idx,
+            memory_level=self._memory_level,
+            memory_turns=self._memory_turns,
+            forget_probability=self._forget_probability,
+            seed=self._seed,
+        )
 
     def select_move(self, state: GameState, legal_moves: list[Move]) -> Move:
         """Select a move based on heuristic evaluation."""
@@ -95,13 +142,33 @@ class HeuristicStrategy(Strategy):
             raise ValueError("No legal moves available")
 
         player_idx = state.current_player
+
+        # Lazy initialize knowledge tracker if not done via on_game_start
+        if self._knowledge is None or self._player_idx != player_idx:
+            self._player_idx = player_idx
+            self._knowledge = KnowledgeTracker.create(
+                player_idx=player_idx,
+                memory_level=self._memory_level,
+                memory_turns=self._memory_turns,
+                forget_probability=self._forget_probability,
+                seed=self._seed,
+            )
+
+        # Update knowledge from current state (observes hand if we have glasses)
+        self._knowledge.update_from_state(state)
+
+        # Get knowledge analysis (may be partial or complete)
+        known_cards = self._knowledge.get_known_opponent_cards()
+        knowledge_analysis = analyze_known_hand(known_cards) if known_cards else None
+        unknown_count = get_unknown_card_count(state, player_idx, known_cards)
+
         my_points = state.players[player_idx].point_total
         opp_points = state.players[1 - player_idx].point_total
         point_diff = my_points - opp_points
 
-        # Score each move with context
+        # Score each move with context and knowledge
         scored_moves = [
-            (self._score_move(state, move, player_idx, point_diff), move)
+            (self._score_move(state, move, player_idx, point_diff, knowledge_analysis, unknown_count), move)
             for move in legal_moves
         ]
 
@@ -113,17 +180,61 @@ class HeuristicStrategy(Strategy):
         return self._rng.choice(best_moves)
 
     def _score_move(
-        self, state: GameState, move: Move, player_idx: int, point_diff: int
+        self,
+        state: GameState,
+        move: Move,
+        player_idx: int,
+        point_diff: int,
+        knowledge: dict | None = None,
+        unknown_count: int = 0,
     ) -> float:
         """Score a move (higher is better).
 
         Scoring is based on MCTS-learned patterns from 1000+ games.
+        When knowledge about opponent's hand is available, adjustments are made.
+
+        Args:
+            state: Current game state
+            move: Move to score
+            player_idx: Our player index
+            point_diff: Our points minus opponent's points
+            knowledge: Analysis of known opponent cards (from analyze_known_hand)
+            unknown_count: Number of cards in opponent's hand we don't know about
         """
         my_points = state.players[player_idx].point_total
         opp_points = state.players[1 - player_idx].point_total
         threshold = state.point_threshold(player_idx)
         is_behind = point_diff < -3
         is_behind_big = point_diff < -8
+
+        # Calculate base score first
+        base_score = self._base_score(
+            state, move, player_idx, my_points, opp_points, threshold,
+            is_behind, is_behind_big
+        )
+
+        # Apply knowledge-based adjustments if we have information
+        if knowledge is not None:
+            base_score += self._knowledge_adjustment(
+                move, knowledge, unknown_count, state, player_idx
+            )
+
+        return base_score
+
+    def _base_score(
+        self,
+        state: GameState,
+        move: Move,
+        player_idx: int,
+        my_points: int,
+        opp_points: int,
+        threshold: int,
+        is_behind: bool,
+        is_behind_big: bool,
+    ) -> float:
+        """Calculate the base score for a move (without knowledge adjustments)."""
+        # Calculate point_diff for cases that need it
+        point_diff = my_points - opp_points
 
         match move:
             case PlayPoints(card=card):
@@ -355,6 +466,140 @@ class HeuristicStrategy(Strategy):
 
         return 0
 
+    def _knowledge_adjustment(
+        self,
+        move: Move,
+        knowledge: dict,
+        unknown_count: int,
+        state: GameState,
+        player_idx: int,
+    ) -> float:
+        """Calculate score adjustment based on knowledge of opponent's hand.
+
+        This method applies strategic adjustments when we have information about
+        what cards the opponent holds. The adjustments vary based on:
+        - Whether we have complete knowledge (unknown_count == 0)
+        - Specific threats we know about (Jacks, Aces, counters)
+        - Opportunities created by knowing what opponent lacks
+
+        Args:
+            move: The move being scored
+            knowledge: Analysis dict from analyze_known_hand()
+            unknown_count: How many cards in opponent's hand we don't know
+            state: Current game state
+            player_idx: Our player index
+
+        Returns:
+            Score adjustment (positive = better, negative = worse)
+        """
+        adjustment = 0.0
+
+        # Full knowledge is more valuable than partial
+        # Certainty factor: 1.0 when we know all cards, decreasing with unknowns
+        opp_hand_size = len(state.players[1 - player_idx].hand)
+        certainty = 1.0 - (unknown_count / max(opp_hand_size, 1)) if opp_hand_size > 0 else 0.0
+
+        match move:
+            case PlayOneOff():
+                # Key insight: one-offs are much better when opponent can't counter
+                if not knowledge["has_counter"]:
+                    if certainty >= 0.8:
+                        # High certainty they have no counter - big boost
+                        adjustment += 200
+                    elif certainty >= 0.5:
+                        # Moderate certainty
+                        adjustment += 100
+                    # If low certainty, unknown cards might have counter
+                elif knowledge["counter_count"] == 1 and certainty >= 0.8:
+                    # We know they have exactly one counter
+                    # If we have multiple one-offs, first one draws it out
+                    adjustment += 30
+
+            case Scuttle(target=target):
+                # If opponent has Jack, protect our high-value points proactively
+                if knowledge["has_jack"] and target.point_value >= 8:
+                    # Remove their high-value target before they steal ours
+                    adjustment += 100 * certainty
+
+                # If we know opponent can't scuttle back, less risky
+                if not any(r.value > target.point_value for r in knowledge["scuttle_ranks"]):
+                    if certainty >= 0.7:
+                        adjustment += 30
+
+            case PlayPoints(card=card):
+                # Adjust based on known threats to this card
+
+                # If opponent has Jack and this is high-value, be cautious
+                if knowledge["has_jack"] and card.point_value >= 8:
+                    # Penalty scales with certainty and number of Jacks
+                    adjustment -= 40 * certainty * knowledge["jack_count"]
+
+                # If opponent can scuttle this specific card
+                can_scuttle = any(
+                    r.value > card.rank.value or
+                    (r.value == card.rank.value)  # Same rank, might have higher suit
+                    for r in knowledge["scuttle_ranks"]
+                )
+                if can_scuttle:
+                    adjustment -= 20 * certainty
+
+                # Positive: if we KNOW opponent can't threaten this card
+                if (not knowledge["has_jack"] and
+                    not can_scuttle and
+                    certainty >= 0.8):
+                    # Safe to play - small boost
+                    adjustment += 20
+
+            case PlayPermanent(card=card):
+                if card.rank == Rank.QUEEN:
+                    # Queen is more valuable when opponent has Jacks
+                    if knowledge["has_jack"]:
+                        adjustment += 120 * certainty * knowledge["jack_count"]
+                    # Queen less valuable when opponent has no threats
+                    elif certainty >= 0.8 and not knowledge["has_jack"]:
+                        adjustment -= 30  # Don't waste time on protection
+
+                elif card.rank == Rank.KING:
+                    # King slightly more valuable when opponent lacks Ace
+                    # (can't mass-scrap our accumulated points)
+                    if not knowledge["has_ace"] and certainty >= 0.7:
+                        adjustment += 30
+
+                elif card.rank == Rank.EIGHT:
+                    # Playing 8 as Glasses when we already have knowledge
+                    # is less valuable (we already know their hand)
+                    if knowledge["known_count"] > 0:
+                        adjustment -= 20  # Redundant information
+
+                elif card.rank == Rank.JACK:
+                    # Jack steal - if opponent has counter, risky
+                    if knowledge["has_counter"]:
+                        adjustment -= 50 * certainty
+                    # If opponent has no counter, Jack is very safe
+                    elif certainty >= 0.7:
+                        adjustment += 50
+
+            case Counter():
+                # If we KNOW opponent has another counter, might want to hold ours
+                if knowledge["counter_count"] >= 2 and certainty >= 0.5:
+                    # They can counter our counter, so our counter is less valuable
+                    adjustment -= 30
+
+            case DeclineCounter():
+                # If we know opponent has no more counters, we're safe to decline
+                if not knowledge["has_counter"] and certainty >= 0.8:
+                    adjustment += 50  # Safe to let it resolve if we have no counter
+
+            case Draw():
+                # Drawing is less valuable when we already have good information
+                # But still useful if there are many unknowns
+                if certainty >= 0.8:
+                    adjustment -= 20  # We already know a lot, maybe act on it
+                elif unknown_count > 2:
+                    adjustment += 10  # Drawing might reveal threats
+
+        return adjustment
+
 
 class HeuristicStrategyV2(Strategy):
     """Enhanced heuristic incorporating Minimax vs MCTS analysis learnings.
@@ -370,10 +615,15 @@ class HeuristicStrategyV2(Strategy):
     Decision Framework:
     - DESTROY if: Turn 1-4, have Six, opponent has King/Queen, used <2 one-offs
     - RACE otherwise: Points > Draw > One-offs
+
+    Memory Levels (for knowledge tracking):
+    - PERFECT: Remember all seen cards until they leave opponent's hand
+    - TURN_LIMITED: Remember cards for N turns after seeing them
+    - PROBABILISTIC: Chance to forget cards each turn
+    - NONE: No memory, only use current Glasses visibility
     """
 
     VERSION = "v2"
-    name = "Heuristic-v2"
 
     # One-off win rates from analysis
     ONEOFF_WIN_RATES = {
@@ -387,14 +637,48 @@ class HeuristicStrategyV2(Strategy):
         Rank.NINE: 0.00,   # NEVER use
     }
 
-    def __init__(self, seed: int | None = None):
+    def __init__(
+        self,
+        seed: int | None = None,
+        memory_level: MemoryLevel = MemoryLevel.PERFECT,
+        memory_turns: int = 3,
+        forget_probability: float = 0.3,
+    ):
+        """Initialize the v2 heuristic strategy.
+
+        Args:
+            seed: Random seed for tie-breaking and probabilistic forgetting
+            memory_level: How much to remember about opponent's hand
+            memory_turns: For TURN_LIMITED, how many turns to remember
+            forget_probability: For PROBABILISTIC, chance to forget per turn
+        """
         self._rng = random.Random(seed)
         self._seed = seed
         self._oneoffs_used = 0
+        self._memory_level = memory_level
+        self._memory_turns = memory_turns
+        self._forget_probability = forget_probability
+        self._knowledge: KnowledgeTracker | None = None
+        self._player_idx: int | None = None
+
+    @property
+    def name(self) -> str:
+        mem_suffix = ""
+        if self._memory_level != MemoryLevel.NONE:
+            mem_suffix = f"-mem:{self._memory_level.name.lower()}"
+        return f"Heuristic-v2{mem_suffix}"
 
     def on_game_start(self, state: GameState, player_idx: int) -> None:
-        """Reset per-game tracking."""
+        """Reset per-game tracking and initialize knowledge tracker."""
         self._oneoffs_used = 0
+        self._player_idx = player_idx
+        self._knowledge = KnowledgeTracker.create(
+            player_idx=player_idx,
+            memory_level=self._memory_level,
+            memory_turns=self._memory_turns,
+            forget_probability=self._forget_probability,
+            seed=self._seed,
+        )
 
     def select_move(self, state: GameState, legal_moves: list[Move]) -> Move:
         """Select a move based on v2 heuristic evaluation."""
@@ -402,13 +686,33 @@ class HeuristicStrategyV2(Strategy):
             raise ValueError("No legal moves available")
 
         player_idx = state.current_player
+
+        # Lazy initialize knowledge tracker if not done via on_game_start
+        if self._knowledge is None or self._player_idx != player_idx:
+            self._player_idx = player_idx
+            self._knowledge = KnowledgeTracker.create(
+                player_idx=player_idx,
+                memory_level=self._memory_level,
+                memory_turns=self._memory_turns,
+                forget_probability=self._forget_probability,
+                seed=self._seed,
+            )
+
+        # Update knowledge from current state
+        self._knowledge.update_from_state(state)
+
+        # Get knowledge analysis
+        known_cards = self._knowledge.get_known_opponent_cards()
+        knowledge_analysis = analyze_known_hand(known_cards) if known_cards else None
+        unknown_count = get_unknown_card_count(state, player_idx, known_cards)
+
         my_points = state.players[player_idx].point_total
         opp_points = state.players[1 - player_idx].point_total
         point_diff = my_points - opp_points
 
-        # Score each move
+        # Score each move with knowledge
         scored_moves = [
-            (self._score_move(state, move, player_idx, point_diff), move)
+            (self._score_move(state, move, player_idx, point_diff, knowledge_analysis, unknown_count), move)
             for move in legal_moves
         ]
 
@@ -423,9 +727,15 @@ class HeuristicStrategyV2(Strategy):
         return chosen
 
     def _score_move(
-        self, state: GameState, move: Move, player_idx: int, point_diff: int
+        self,
+        state: GameState,
+        move: Move,
+        player_idx: int,
+        point_diff: int,
+        knowledge: dict | None = None,
+        unknown_count: int = 0,
     ) -> float:
-        """Score a move using v2 heuristic."""
+        """Score a move using v2 heuristic with knowledge adjustments."""
         my_points = state.players[player_idx].point_total
         opp_points = state.players[1 - player_idx].point_total
         threshold = state.point_threshold(player_idx)
@@ -443,6 +753,120 @@ class HeuristicStrategyV2(Strategy):
         )
         opp_queens = state.players[1 - player_idx].queens_count
 
+        # Calculate base score
+        base_score = self._base_score_v2(
+            state, move, player_idx, my_points, opp_points, threshold, opp_threshold,
+            is_early, is_late, is_behind, is_behind_big, is_ahead, opp_kings, opp_queens
+        )
+
+        # Apply knowledge-based adjustments (reuse v1's adjustment logic)
+        if knowledge is not None:
+            # Use same adjustment logic as v1
+            base_score += self._knowledge_adjustment_v2(
+                move, knowledge, unknown_count, state, player_idx
+            )
+
+        return base_score
+
+    def _knowledge_adjustment_v2(
+        self,
+        move: Move,
+        knowledge: dict,
+        unknown_count: int,
+        state: GameState,
+        player_idx: int,
+    ) -> float:
+        """Calculate score adjustment based on knowledge (v2 version).
+
+        Similar to v1's _knowledge_adjustment but tuned for v2's priorities.
+        """
+        adjustment = 0.0
+
+        opp_hand_size = len(state.players[1 - player_idx].hand)
+        certainty = 1.0 - (unknown_count / max(opp_hand_size, 1)) if opp_hand_size > 0 else 0.0
+
+        match move:
+            case PlayOneOff():
+                # v2 cares more about one-off timing, so knowledge is very valuable
+                if not knowledge["has_counter"]:
+                    if certainty >= 0.8:
+                        adjustment += 250  # Higher than v1 - one-offs need to succeed
+                    elif certainty >= 0.5:
+                        adjustment += 120
+
+            case Scuttle(target=target):
+                if knowledge["has_jack"] and target.point_value >= 8:
+                    adjustment += 100 * certainty
+
+            case PlayPoints(card=card):
+                if knowledge["has_jack"] and card.point_value >= 8:
+                    adjustment -= 40 * certainty * knowledge["jack_count"]
+
+                can_scuttle = any(
+                    r.value > card.rank.value or r.value == card.rank.value
+                    for r in knowledge["scuttle_ranks"]
+                )
+                if can_scuttle:
+                    adjustment -= 20 * certainty
+
+                if not knowledge["has_jack"] and not can_scuttle and certainty >= 0.8:
+                    adjustment += 30  # v2 values safe point plays more
+
+            case PlayPermanent(card=card):
+                if card.rank == Rank.QUEEN:
+                    if knowledge["has_jack"]:
+                        adjustment += 120 * certainty * knowledge["jack_count"]
+                    elif certainty >= 0.8:
+                        adjustment -= 40  # v2 dislikes defensive plays more
+
+                elif card.rank == Rank.KING:
+                    if not knowledge["has_ace"] and certainty >= 0.7:
+                        adjustment += 40  # v2 values Kings more
+
+                elif card.rank == Rank.EIGHT:
+                    if knowledge["known_count"] > 0:
+                        adjustment -= 30
+
+                elif card.rank == Rank.JACK:
+                    if knowledge["has_counter"]:
+                        adjustment -= 60 * certainty  # v2 more cautious
+                    elif certainty >= 0.7:
+                        adjustment += 60
+
+            case Counter():
+                if knowledge["counter_count"] >= 2 and certainty >= 0.5:
+                    adjustment -= 40  # v2 values counter cards more
+
+            case DeclineCounter():
+                if not knowledge["has_counter"] and certainty >= 0.8:
+                    adjustment += 60
+
+            case Draw():
+                if certainty >= 0.8:
+                    adjustment -= 30
+                elif unknown_count > 2:
+                    adjustment += 15
+
+        return adjustment
+
+    def _base_score_v2(
+        self,
+        state: GameState,
+        move: Move,
+        player_idx: int,
+        my_points: int,
+        opp_points: int,
+        threshold: int,
+        opp_threshold: int,
+        is_early: bool,
+        is_late: bool,
+        is_behind: bool,
+        is_behind_big: bool,
+        is_ahead: bool,
+        opp_kings: int,
+        opp_queens: int,
+    ) -> float:
+        """Calculate base score for v2 heuristic."""
         match move:
             case PlayPoints(card=card):
                 # Check for win
@@ -645,4 +1069,7 @@ class HeuristicStrategyV2(Strategy):
 
     def get_identity_params(self) -> dict:
         """Return parameters that identify this strategy configuration."""
-        return {"version": self.VERSION}
+        return {
+            "version": self.VERSION,
+            "memory_level": self._memory_level.name,
+        }
