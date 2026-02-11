@@ -202,8 +202,9 @@ class ISMCTSStrategy(Strategy):
         - Cards in play (points, permanents, jacks)
         - Cards in scrap
         - How many cards opponent has
+        - Opponent's hand if we have Glasses (8 as permanent)
 
-        We don't know:
+        We don't know (unless we have glasses):
         - Exact cards in opponent's hand
         - Order of deck
 
@@ -215,7 +216,48 @@ class ISMCTSStrategy(Strategy):
             A determinized game state with sampled hidden cards.
         """
         opponent = 1 - perspective_player
+        my_state = state.players[perspective_player]
 
+        # GLASSES: If we have glasses, we KNOW opponent's hand - no sampling needed!
+        if my_state.has_glasses:
+            # We can see opponent's hand, so determinization only affects deck order
+            all_cards = set(create_deck())
+            known_locations: set[Card] = set()
+
+            # All visible cards
+            for i in range(2):
+                p = state.players[i]
+                known_locations.update(p.hand)  # We can see both hands with glasses
+                known_locations.update(p.points_field)
+                known_locations.update(p.permanents)
+                for jack, stolen in p.jacks:
+                    known_locations.add(jack)
+                    known_locations.add(stolen)
+            known_locations.update(state.scrap)
+            if state.seven_state:
+                known_locations.update(state.seven_state.revealed_cards)
+
+            # Only the deck is unknown
+            unknown_deck = list(all_cards - known_locations)
+            self._rng.shuffle(unknown_deck)
+
+            # Return state with actual opponent hand (known) and shuffled deck
+            return GameState(
+                players=state.players,  # Keep actual hands
+                deck=tuple(unknown_deck),
+                scrap=state.scrap,
+                current_player=state.current_player,
+                phase=state.phase,
+                turn_number=state.turn_number,
+                consecutive_passes=state.consecutive_passes,
+                counter_state=state.counter_state,
+                seven_state=state.seven_state,
+                four_state=state.four_state,
+                winner=state.winner,
+                win_reason=state.win_reason,
+            )
+
+        # No glasses - standard determinization with sampled opponent hand
         # Collect all known card locations
         known_locations: set[Card] = set()
 

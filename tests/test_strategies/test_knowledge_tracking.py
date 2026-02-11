@@ -637,3 +637,78 @@ class TestMemoryLevelNames:
 
         assert "mem:perfect" in strategy_perfect.name.lower()
         assert "mem:" not in strategy_none.name.lower()
+
+
+class TestMCTSWithKnowledge:
+    """Integration tests for MCTSStrategy with knowledge tracking."""
+
+    def test_initializes_knowledge_tracker(self):
+        """Should initialize knowledge tracker on game start."""
+        from strategies.mcts import MCTSStrategy
+
+        strategy = MCTSStrategy(
+            iterations=10,
+            seed=42,
+            memory_level=MemoryLevel.PERFECT,
+        )
+
+        player0 = PlayerState(hand=(), points_field=(), permanents=())
+        player1 = PlayerState(hand=(), points_field=(), permanents=())
+        state = GameState(
+            players=(player0, player1),
+            deck=(),
+            scrap=(),
+            current_player=0,
+        )
+
+        strategy.on_game_start(state, player_idx=0)
+
+        assert strategy._knowledge_tracker is not None
+        assert strategy._player_idx == 0
+
+    def test_different_memory_levels(self):
+        """Different memory levels should work."""
+        from strategies.mcts import MCTSStrategy
+
+        for level in MemoryLevel:
+            strategy = MCTSStrategy(
+                iterations=10,
+                seed=42,
+                memory_level=level,
+            )
+
+            player0 = PlayerState(
+                hand=(Card(Rank.TEN, Suit.HEARTS),),
+                points_field=(),
+                permanents=(),
+            )
+            player1 = PlayerState(
+                hand=(Card(Rank.FIVE, Suit.SPADES),),
+                points_field=(),
+                permanents=(),
+            )
+            state = GameState(
+                players=(player0, player1),
+                deck=(Card(Rank.THREE, Suit.CLUBS),),
+                scrap=(),
+                current_player=0,
+            )
+
+            strategy.on_game_start(state, player_idx=0)
+            legal_moves = generate_legal_moves(state)
+            move = strategy.select_move(state, legal_moves)
+
+            assert move in legal_moves
+
+    def test_get_identity_params_includes_memory(self):
+        """get_identity_params should include memory level."""
+        from strategies.mcts import MCTSStrategy
+
+        strategy = MCTSStrategy(
+            iterations=100,
+            memory_level=MemoryLevel.TURN_LIMITED,
+        )
+        params = strategy.get_identity_params()
+
+        assert params["memory_level"] == "TURN_LIMITED"
+        assert params["iterations"] == 100

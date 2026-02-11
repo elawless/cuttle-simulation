@@ -6,13 +6,33 @@ This heuristic was tuned based on analysis of 1000+ MCTS games that achieved
 1. Cuttle is a RACING game - points > control
 2. High cards (8-10) should almost always be played for points
 3. Scuttling is usually wrong (1-for-1 trades don't advance win condition)
-4. 8 as Glasses is a trap (8 points > information)
+4. 8 as Glasses: CONDITIONAL on your hand (see below)
 5. Queens are overrated (protection < offense)
 6. Draw when no good point play available
 7. Use Threes to revive valuable cards
 8. Use Sevens for deck play one-off
 9. Counter selectively (only Aces and Fives)
 10. When behind, use Jacks to steal high-value points
+
+GLASSES DECISION RULE (Feb 2026, from ISMCTS 1500-iteration simulation):
+
+Play GLASSES if you have (9 OR 10 OR King) AND no Queen:
+  - 9/10 in hand: Enables "layering" - knowing if opponent has Jack lets you
+    save high-value cards as finishers instead of having them stolen
+  - King in hand: Enables timing - knowing if opponent has Six/Two lets you
+    delay King until threat is used
+  - Queen negates the value: Protection makes information redundant
+
+Play POINTS otherwise:
+  - No high-value cards to protect from Jack steal
+  - No King to time around destruction
+  - 8 points is the better default
+
+Evidence from 150 decision points at 1500 ISMCTS iterations:
+  - Player has 9 OR 10: Glasses +8 contested
+  - Player has King: Glasses +6 contested
+  - Player has NO King AND NO 9/10: Points +3 contested
+  - Player has Queen: TIE (information doesn't help)
 
 VERSION HISTORY:
 - v1: Initial MCTS-learned heuristic (Feb 2026)
@@ -23,6 +43,10 @@ VERSION HISTORY:
   * Kings early > Kings late (threshold reduction compounds)
   * Racing beats destroying in most cases (75% points > 25% one-offs)
   * Destroy only when: behind AND have Six targeting King/Queen
+- v3: Glasses decision rule from ISMCTS simulation (Feb 2026):
+  * Glasses vs Points depends on YOUR hand, not opponent's
+  * Glasses valuable with 9/10 (layering) or King (timing)
+  * Points better when no high-value assets to protect
 """
 
 from __future__ import annotations
@@ -70,7 +94,7 @@ class HeuristicStrategy(Strategy):
     7. Use one-offs situationally (Threes to revive, Sevens for deck play)
     8. Counter only Aces and Fives
     9. Scuttle rarely (only for lethal or huge value differential)
-    10. Queens/8-as-Glasses are low priority
+    10. Queens (64% WR) and Glasses (62% WR) are valuable permanents
 
     Version History:
     - v1: Initial MCTS-learned heuristic (Feb 2026)
@@ -288,15 +312,29 @@ class HeuristicStrategy(Strategy):
                     return base
 
                 elif card.rank == Rank.QUEEN:
-                    # Queens: 45% win rate - correlates with weaker positions
-                    # MCTS plays Queen when it has weak options
-                    return 100  # Reduced from 150
+                    # Unbiased MCTS discovery (Feb 2026):
+                    # Queens: 64% win rate - higher than expected
+                    # Protection is valuable, especially vs Jacks
+                    return 250  # Increased based on discovery data
 
                 elif card.rank == Rank.EIGHT:
-                    # 8 as Glasses is almost never correct
-                    # MCTS: 5.1% Glasses vs 93.4% points
-                    # Only consider if we literally can't play it for points
-                    return 50
+                    # ISMCTS simulation (1500 iter, Feb 2026):
+                    # Glasses value depends on YOUR hand, not opponent's
+                    # - With 9/10: Glasses +8 (layering against Jack)
+                    # - With King: Glasses +6 (timing against destruction)
+                    # - With Queen: TIE (protection makes info redundant)
+                    # - Without 9/10/King: Points +3
+                    my_hand = state.players[player_idx].hand
+                    has_high_points = any(c.rank in (Rank.NINE, Rank.TEN) for c in my_hand)
+                    has_king = any(c.rank == Rank.KING for c in my_hand)
+                    has_queen = any(c.rank == Rank.QUEEN for c in my_hand)
+
+                    if (has_high_points or has_king) and not has_queen:
+                        # Glasses is valuable - layering or timing opportunity
+                        return 950  # Higher than 8 as points (880)
+                    else:
+                        # No assets to protect, or Queen makes info redundant
+                        return 800  # Lower than 8 as points (880)
 
             case PlayOneOff(card=card, effect=effect):
                 from cuttle_engine.moves import OneOffEffect
@@ -500,7 +538,9 @@ class HeuristicStrategy(Strategy):
         certainty = 1.0 - (unknown_count / max(opp_hand_size, 1)) if opp_hand_size > 0 else 0.0
 
         match move:
-            case PlayOneOff():
+            case PlayOneOff(card=card):
+                from cuttle_engine.moves import OneOffEffect
+
                 # Key insight: one-offs are much better when opponent can't counter
                 if not knowledge["has_counter"]:
                     if certainty >= 0.8:
@@ -515,6 +555,26 @@ class HeuristicStrategy(Strategy):
                     # If we have multiple one-offs, first one draws it out
                     adjustment += 30
 
+                # CRITICAL: Four (force discard) is valuable when opponent has Ace
+                # Can force them to discard the Ace before they use it
+                if card.rank == Rank.FOUR and knowledge["has_ace"]:
+                    my_points = state.players[player_idx].point_total
+                    if my_points >= 10:
+                        # We have points to protect - force them to discard
+                        adjustment += 150 * certainty
+                    elif my_points >= 5:
+                        adjustment += 80 * certainty
+
+                # CRITICAL: Don't use Two as one-off when opponent has Ace
+                # Save it as a counter for their Ace instead!
+                if card.rank == Rank.TWO and knowledge["has_ace"]:
+                    my_points = state.players[player_idx].point_total
+                    if my_points >= 10:
+                        # We have points to protect - save Two for countering Ace
+                        adjustment -= 200 * certainty
+                    elif my_points >= 5:
+                        adjustment -= 100 * certainty
+
             case Scuttle(target=target):
                 # If opponent has Jack, protect our high-value points proactively
                 if knowledge["has_jack"] and target.point_value >= 8:
@@ -528,6 +588,25 @@ class HeuristicStrategy(Strategy):
 
             case PlayPoints(card=card):
                 # Adjust based on known threats to this card
+
+                # CRITICAL: If opponent has Ace, racing to accumulate points is risky
+                # They can scrap ALL our points at once, losing our investment
+                if knowledge["has_ace"]:
+                    my_points = state.players[player_idx].point_total
+                    # The more points we have, the more devastating Ace would be
+                    if my_points >= 15:
+                        # We're close to winning but Ace would reset us
+                        # Hold off, look for counters/discard options first
+                        adjustment -= 150 * certainty
+                    elif my_points >= 10:
+                        # Significant investment at risk
+                        adjustment -= 100 * certainty
+                    elif my_points >= 5:
+                        # Some risk, moderate penalty
+                        adjustment -= 50 * certainty
+                    # Low points: less to lose, smaller penalty
+                    else:
+                        adjustment -= 20 * certainty
 
                 # If opponent has Jack and this is high-value, be cautious
                 if knowledge["has_jack"] and card.point_value >= 8:
@@ -545,10 +624,11 @@ class HeuristicStrategy(Strategy):
 
                 # Positive: if we KNOW opponent can't threaten this card
                 if (not knowledge["has_jack"] and
+                    not knowledge["has_ace"] and
                     not can_scuttle and
                     certainty >= 0.8):
-                    # Safe to play - small boost
-                    adjustment += 20
+                    # Safe to play - boost for safe racing
+                    adjustment += 50
 
             case PlayPermanent(card=card):
                 if card.rank == Rank.QUEEN:
@@ -786,7 +866,9 @@ class HeuristicStrategyV2(Strategy):
         certainty = 1.0 - (unknown_count / max(opp_hand_size, 1)) if opp_hand_size > 0 else 0.0
 
         match move:
-            case PlayOneOff():
+            case PlayOneOff(card=card):
+                from cuttle_engine.moves import OneOffEffect
+
                 # v2 cares more about one-off timing, so knowledge is very valuable
                 if not knowledge["has_counter"]:
                     if certainty >= 0.8:
@@ -794,11 +876,40 @@ class HeuristicStrategyV2(Strategy):
                     elif certainty >= 0.5:
                         adjustment += 120
 
+                # Four (force discard) is valuable when opponent has Ace
+                if card.rank == Rank.FOUR and knowledge["has_ace"]:
+                    my_points = state.players[player_idx].point_total
+                    if my_points >= 10:
+                        adjustment += 150 * certainty
+                    elif my_points >= 5:
+                        adjustment += 80 * certainty
+
+                # Don't use Two as one-off when opponent has Ace - save for counter
+                if card.rank == Rank.TWO and knowledge["has_ace"]:
+                    my_points = state.players[player_idx].point_total
+                    if my_points >= 10:
+                        adjustment -= 200 * certainty
+                    elif my_points >= 5:
+                        adjustment -= 100 * certainty
+
             case Scuttle(target=target):
                 if knowledge["has_jack"] and target.point_value >= 8:
                     adjustment += 100 * certainty
 
             case PlayPoints(card=card):
+                # CRITICAL: If opponent has Ace, racing to accumulate points is risky
+                # They can scrap ALL our points at once
+                if knowledge["has_ace"]:
+                    my_points = state.players[player_idx].point_total
+                    if my_points >= 15:
+                        adjustment -= 150 * certainty  # Close to winning but Ace resets us
+                    elif my_points >= 10:
+                        adjustment -= 100 * certainty
+                    elif my_points >= 5:
+                        adjustment -= 50 * certainty
+                    else:
+                        adjustment -= 20 * certainty
+
                 if knowledge["has_jack"] and card.point_value >= 8:
                     adjustment -= 40 * certainty * knowledge["jack_count"]
 
@@ -809,8 +920,11 @@ class HeuristicStrategyV2(Strategy):
                 if can_scuttle:
                     adjustment -= 20 * certainty
 
-                if not knowledge["has_jack"] and not can_scuttle and certainty >= 0.8:
-                    adjustment += 30  # v2 values safe point plays more
+                if (not knowledge["has_jack"] and
+                    not knowledge["has_ace"] and
+                    not can_scuttle and
+                    certainty >= 0.8):
+                    adjustment += 50  # Safe to race - boost for safe point plays
 
             case PlayPermanent(card=card):
                 if card.rank == Rank.QUEEN:
@@ -911,10 +1025,21 @@ class HeuristicStrategyV2(Strategy):
                     return base
 
                 elif card.rank == Rank.QUEEN:
-                    return 100
+                    # Unbiased MCTS discovery: 64% win rate
+                    return 250
 
                 elif card.rank == Rank.EIGHT:
-                    return 50
+                    # ISMCTS simulation (1500 iter, Feb 2026):
+                    # Glasses value depends on YOUR hand
+                    my_hand = state.players[player_idx].hand
+                    has_high_points = any(c.rank in (Rank.NINE, Rank.TEN) for c in my_hand)
+                    has_king = any(c.rank == Rank.KING for c in my_hand)
+                    has_queen = any(c.rank == Rank.QUEEN for c in my_hand)
+
+                    if (has_high_points or has_king) and not has_queen:
+                        return 950  # Glasses valuable for layering/timing
+                    else:
+                        return 800  # Points better without assets to protect
 
             case PlayOneOff(card=card, effect=effect):
                 from cuttle_engine.moves import OneOffEffect
