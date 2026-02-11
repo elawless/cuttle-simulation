@@ -147,4 +147,5 @@ class TestMinimaxIdentity:
     def test_get_identity_params(self):
         strategy = MinimaxStrategy(depth=3)
         params = strategy.get_identity_params()
-        assert params == {"depth": 3}
+        assert params["depth"] == 3
+        assert "memory_level" in params

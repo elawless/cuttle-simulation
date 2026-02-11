@@ -273,7 +273,7 @@ Don't try to control the board - just outpace your opponent.
 | Card | Optimal Use | Notes |
 |------|-------------|-------|
 | **10, 9** | Always points | Never scuttle with these (99% points) |
-| **8** | Almost always points | Glasses is a trap (93% points vs 5% glasses) |
+| **8** | Conditional (see Glasses section) | Points if no 9/10/King in hand; Glasses if have 9/10/King and no Queen |
 | **7** | Points or one-off | Use deck play 27% of the time |
 | **6** | Usually points | 78% points, only scrap perms if they have many |
 | **5** | Points | 93% points, scuttle is rarely worth it |
@@ -291,7 +291,8 @@ Don't try to control the board - just outpace your opponent.
 - Play points aggressively (53.5% of moves)
 - Draw if no good point card (14.3%)
 - Kings are good early (7.7%)
-- Avoid: Scuttling (0.9%), Queens (4.4%), 8 as Glasses (0.9%)
+- 8: Glasses if have 9/10/King, Points otherwise (see Glasses section)
+- Avoid: Scuttling (0.9%), Queens (4.4%)
 
 **MIDGAME (Turns 4-8):**
 - Draw more (34.7%) - card advantage matters
@@ -319,7 +320,7 @@ Don't try to control the board - just outpace your opponent.
 
 **When EVEN:**
 - Points (43.6%) + Draw (29.6%)
-- DON'T use 8 as Glasses (0.5% vs 8.1%)
+- 8 as Glasses: depends on your hand (see Glasses section above)
 
 **When AHEAD:**
 - Play Kings to close out (+10% when ahead 3-7)
@@ -402,7 +403,7 @@ When even/ahead, Jack recovers both point-stealing ability and board presence.
 
 ### Key Strategic Insights
 
-1. **8s for points is MASSIVE** - 99.3% points vs 0.7% glasses
+1. **8s decision is contextual** - Glasses if you have 9/10/King (layering/timing), Points otherwise
 2. **Scuttle rarely** - 10.1% usage when available, +18.7% better to NOT scuttle
 3. **Threes revive 42% of time** - Priority: 10 > Jack > King > 9
 4. **Jack Steal is premium** - 79.5% win rate, one of the best plays
@@ -429,6 +430,86 @@ See `training_data/MCTS_ANALYSIS_SUMMARY.md` for full details.
 - One-offs (4,5,7): MCTS prefers points 60-70% of time - REDUCED one-off scores
 - Draw: 58% win rate - REDUCED scoring (250)
 - Scuttle: 10% usage rate when available, +18.7% better to not scuttle
+
+## Glasses (8 as Permanent) Analysis (Feb 2026)
+
+### The Question
+
+Is seeing opponent's hand worth giving up 8 points? The answer depends on **your own hand**.
+
+### Methodology
+
+ISMCTS counterfactual simulation: from identical game states, branch into "8 as Points" vs
+"8 as Glasses", play both to completion, compare outcomes. Pure computational discovery
+with no heuristic biases.
+
+### Key Finding: Glasses Value Depends on YOUR Hand
+
+At 1500 ISMCTS iterations, 150 decision points:
+
+| Your Hand | Contested Winner | Margin | Why |
+|-----------|------------------|--------|-----|
+| Has 9 OR 10 | **Glasses** | +8 | Layering - save finisher if opponent has Jack |
+| Has King | **Glasses** | +6 | Timing - delay King if opponent has destruction |
+| Has 3+ point cards | **Glasses** | +10 | More layering flexibility |
+| Has Queen | **Tie** | 0 | Protection makes info redundant |
+| No 9/10/King | **Points** | +3 | Nothing to time or protect |
+
+### The Decision Rule
+
+```
+IF you have (9 OR 10 OR King) AND no Queen:
+    → Play GLASSES
+ELSE:
+    → Play POINTS
+```
+
+### Why Information Helps (When It Does)
+
+1. **Jack threat (layering)**: If opponent has Jack, they can steal your point cards.
+   Knowing this lets you play low-value cards first and save 9/10 as a finisher.
+
+2. **Six/Two threat (timing)**: If opponent has destruction, playing King early
+   means it gets destroyed before you benefit. Knowing lets you delay King.
+
+3. **Ace threat**: Knowing opponent has Ace lets you avoid overcommitting to points.
+
+### Why Information Doesn't Help
+
+- **Queen in hand**: You're already protected from targeted effects
+- **No high-value assets**: Nothing worth protecting from Jack steal
+- **No King**: No timing decisions to make
+
+### Scaling with Search Depth
+
+| ISMCTS Iterations | Overall Winner | Jack Scenario | King Scenario |
+|-------------------|----------------|---------------|---------------|
+| 150 | Points +31 | Points +3 | Points +17 |
+| 500 | Points +5 | Glasses +3 | Points +5 |
+| 1000 | Points +6 | Glasses +3 | Glasses +1 |
+| **1500** | **Glasses +8** | **Glasses +10** | **Glasses +3** |
+
+Shallow search misses the timing/layering strategies. Deep search discovers them.
+
+### Threat Breakdown (1500 iterations)
+
+| Opponent Threat | Glasses Advantage | Notes |
+|-----------------|-------------------|-------|
+| Jack (steal) | **+10** | Largest - layering is very valuable |
+| Ace (wipe) | +7 | Avoid overcommitting |
+| Six (destroy) | +4 | King timing |
+| King (threshold) | +3 | Racing info |
+| Two (counter) | -1 | Nearly even |
+
+### Training Data
+
+Full results saved in `training_data/glasses_comprehensive_1500iter_*.json`
+
+### Test Script
+
+```bash
+python scripts/test_glasses_comprehensive.py --decisions 150 --iterations 1500 --workers 6
+```
 
 ## Minimax Strategy & MCTS vs Minimax Analysis (Feb 2026)
 

@@ -1,4 +1,4 @@
-"""Monte Carlo Tree Search strategy for Cuttle."""
+"""Monte Carlo Tree Search strategy for Cuttle with knowledge tracking."""
 
 from __future__ import annotations
 
@@ -15,8 +15,15 @@ from cuttle_engine.state import GamePhase
 from strategies.base import Strategy
 from strategies.heuristic import HeuristicStrategy
 from strategies.random_strategy import RandomStrategy
+from strategies.knowledge import (
+    KnowledgeTracker,
+    MemoryLevel,
+    analyze_known_hand,
+    get_unknown_card_count,
+)
 
 if TYPE_CHECKING:
+    from cuttle_engine.cards import Card
     from cuttle_engine.moves import Move
     from cuttle_engine.state import GameState
 
@@ -28,19 +35,28 @@ class EpsilonGreedyStrategy(Strategy):
     but occasionally makes random moves (epsilon) to add diversity.
     This provides better signal than pure random rollouts while avoiding
     overfitting to heuristic blind spots.
+
+    Supports knowledge tracking for glasses-aware decision making.
     """
 
-    def __init__(self, epsilon: float = 0.2, seed: int | None = None):
+    def __init__(
+        self,
+        epsilon: float = 0.2,
+        seed: int | None = None,
+        memory_level: MemoryLevel = MemoryLevel.PERFECT,
+    ):
         """Initialize epsilon-greedy strategy.
 
         Args:
             epsilon: Probability of making a random move (0.2 = 20% random).
             seed: Random seed for reproducibility.
+            memory_level: Memory level for knowledge tracking.
         """
         self._epsilon = epsilon
         self._rng = random.Random(seed)
-        self._heuristic = HeuristicStrategy(seed)
+        self._heuristic = HeuristicStrategy(seed, memory_level=memory_level)
         self._random = RandomStrategy(seed)
+        self._memory_level = memory_level
 
     @property
     def name(self) -> str:
@@ -51,6 +67,10 @@ class EpsilonGreedyStrategy(Strategy):
         if self._rng.random() < self._epsilon:
             return self._random.select_move(state, legal_moves)
         return self._heuristic.select_move(state, legal_moves)
+
+    def on_game_start(self, state: GameState, player_idx: int) -> None:
+        """Forward game start to heuristic for knowledge tracking."""
+        self._heuristic.on_game_start(state, player_idx)
 
 
 @dataclass
@@ -191,6 +211,9 @@ class MCTSStrategy(Strategy):
         seed: int | None = None,
         max_simulation_depth: int = 200,
         num_workers: int = 1,
+        memory_level: MemoryLevel = MemoryLevel.PERFECT,
+        memory_turns: int = 3,
+        forget_probability: float = 0.3,
     ):
         """Initialize the MCTS strategy.
 
@@ -202,20 +225,55 @@ class MCTSStrategy(Strategy):
             max_simulation_depth: Maximum moves in a simulation before giving up.
             num_workers: Number of parallel workers (1 = serial, >1 = parallel).
                          When parallel, each worker runs iterations/num_workers iterations.
+            memory_level: Memory level for knowledge tracking (PERFECT, TURN_LIMITED, PROBABILISTIC, NONE).
+            memory_turns: For TURN_LIMITED memory, how many turns to remember.
+            forget_probability: For PROBABILISTIC memory, chance to forget per turn.
         """
         self._iterations = iterations
         self._exploration = exploration_constant
         self._simulation_strategy = simulation_strategy or EpsilonGreedyStrategy(
-            epsilon=0.2, seed=seed
+            epsilon=0.2, seed=seed, memory_level=memory_level
         )
         self._rng = random.Random(seed)
         self._max_sim_depth = max_simulation_depth
         self._num_workers = num_workers
         self._seed = seed
+        self._memory_level = memory_level
+        self._memory_turns = memory_turns
+        self._forget_probability = forget_probability
+        self._knowledge_tracker: KnowledgeTracker | None = None
+        self._player_idx: int | None = None
 
     @property
     def name(self) -> str:
         return f"MCTS({self._iterations})"
+
+    def get_identity_params(self) -> dict:
+        """Return parameters that identify this strategy configuration."""
+        return {
+            "iterations": self._iterations,
+            "exploration_constant": self._exploration,
+            "memory_level": self._memory_level.name,
+            "num_workers": self._num_workers,
+        }
+
+    def on_game_start(self, state: GameState, player_idx: int) -> None:
+        """Initialize knowledge tracker for a new game.
+
+        Args:
+            state: Initial game state.
+            player_idx: Which player we are (0 or 1).
+        """
+        self._player_idx = player_idx
+        self._knowledge_tracker = KnowledgeTracker.create(
+            player_idx=player_idx,
+            memory_level=self._memory_level,
+            memory_turns=self._memory_turns,
+            forget_probability=self._forget_probability,
+            seed=self._seed,
+        )
+        # Also initialize simulation strategy's knowledge tracker
+        self._simulation_strategy.on_game_start(state, player_idx)
 
     def select_move(self, state: GameState, legal_moves: list[Move]) -> Move:
         """Select a move using MCTS.
@@ -232,6 +290,10 @@ class MCTSStrategy(Strategy):
 
         if len(legal_moves) == 1:
             return legal_moves[0]
+
+        # Update knowledge tracker from current state
+        if self._knowledge_tracker is not None:
+            self._knowledge_tracker.update_from_state(state)
 
         # Use parallel execution if num_workers > 1
         if self._num_workers > 1:
@@ -303,6 +365,8 @@ class MCTSStrategy(Strategy):
                     self._exploration,
                     self._max_sim_depth,
                     (self._seed + i) if self._seed is not None else None,
+                    self._memory_level,
+                    self._player_idx,
                 )
                 for i in range(self._num_workers)
             ]
@@ -537,6 +601,8 @@ def _run_mcts_worker(
     exploration: float,
     max_sim_depth: int,
     seed: int | None,
+    memory_level: MemoryLevel = MemoryLevel.PERFECT,
+    player_idx: int | None = None,
 ) -> dict[str, int]:
     """Run MCTS iterations and return visit counts.
 
@@ -550,12 +616,18 @@ def _run_mcts_worker(
         exploration: UCB1 exploration constant.
         max_sim_depth: Maximum simulation depth.
         seed: Random seed for this worker.
+        memory_level: Memory level for knowledge tracking.
+        player_idx: Which player we are (for knowledge tracking).
 
     Returns:
         Dict mapping move string representations to visit counts.
     """
     rng = random.Random(seed)
-    simulation_strategy = EpsilonGreedyStrategy(epsilon=0.2, seed=seed)
+    simulation_strategy = EpsilonGreedyStrategy(epsilon=0.2, seed=seed, memory_level=memory_level)
+
+    # Initialize knowledge tracking for simulation strategy if we know our player
+    if player_idx is not None:
+        simulation_strategy.on_game_start(state, player_idx)
 
     # Create root node
     root = MCTSNode(state=state)
