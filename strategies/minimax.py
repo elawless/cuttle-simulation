@@ -336,6 +336,19 @@ class MinimaxStrategy(Strategy):
             score -= (queens - 2) * 2  # Extra queens less useful
 
         glasses = sum(1 for c in p.permanents if c.rank == 8)
+        if glasses >= 1:
+            # ISMCTS-derived glasses value (Feb 2026):
+            # Glasses is valuable when hand has 9/10/King for layering/timing,
+            # but not when hand has Queen (protection makes info redundant)
+            has_high_points = any(c.rank in (9, 10) for c in p.hand)
+            has_king = any(c.rank == 13 for c in p.hand)
+            has_queen = any(c.rank == 12 for c in p.hand)
+
+            if (has_high_points or has_king) and not has_queen:
+                # Layering/timing opportunity - glasses worth nearly as much as 8 points
+                score += 10
+            # else: glasses just gets base permanent value (2 from len(p.permanents) * 2)
+
         if glasses > 1:
             score -= (glasses - 1) * 2  # Extra glasses useless
 
